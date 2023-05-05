@@ -67,7 +67,7 @@ Vue.component('component-type-list', {
     },
   },
   created() {
-    this.api = 'api/' + this.fileType + '.php';
+    this.api = 'api/' + this.fileType + '';
     // this.init();
   },
   methods: {
@@ -93,7 +93,7 @@ Vue.component('component-type-list', {
       }
     },
     addByPopupFn() {
-      this.http('api/bigType.php', {
+      this.http('api/bigType', {
         info: 'select_' + this.accountType,
       }).then((e) => {
         if (e.tip == 1) {

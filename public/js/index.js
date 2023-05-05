@@ -138,7 +138,7 @@ var app = new Vue({
           };
         },
         getBillFn: () => {
-          this.http('api/accountBook.php', {
+          this.http('api/accountBook', {
             info: 'selectBillByYear',
             year: this.myBill.year,
           }).then((e) => {
@@ -671,7 +671,7 @@ var app = new Vue({
       );
     },
     copyDateFn() {
-      this.http('api/payBudget.php', {
+      this.http('api/payBudget', {
         info: 'copy_by_month',
         month: new Date(this.payBudgetMonthList.d).format('yyyy-MM'),
       }).then((e) => {
@@ -697,7 +697,7 @@ var app = new Vue({
       if (month) {
         this.accountBookMonthList_month = month;
       }
-      this.http('api/accountBook.php', {
+      this.http('api/accountBook', {
         info: 'select_by_month',
         month: this.accountBookMonthList_month,
       }).then((e) => {
@@ -728,7 +728,7 @@ var app = new Vue({
       this.search.data = DEFAULT_SEARCH();
     },
     searchAccountBook() {
-      this.http('api/accountBook.php', {
+      this.http('api/accountBook', {
         info: 'search',
         st: this.search.data.st,
         et: this.search.data.et,
@@ -764,7 +764,7 @@ var app = new Vue({
       this.keyboard.type = d.tt;
       this.keyboard.onConfirmCallBackFn = () => {
         let api =
-          this.keyboard.type == 1 ? 'api/income.php' : 'api/accountBook.php';
+          this.keyboard.type == 1 ? 'api/income' : 'api/accountBook';
         console.log(
           api,
           this.keyboard.tid,
@@ -789,7 +789,7 @@ var app = new Vue({
       };
     },
     deleteAccountBookDetailFn(d) {
-      let api = d.tt == 1 ? 'api/income.php' : 'api/accountBook.php';
+      let api = d.tt == 1 ? 'api/income' : 'api/accountBook';
       this.http(api, {
         info: 'delete',
         id: d.id,
@@ -825,7 +825,7 @@ var app = new Vue({
       }
     },
     showBigIncomeTypesFn() {
-      this.http('api/bigType.php', {
+      this.http('api/bigType', {
         info: 'select_income',
       }).then((e) => {
         this.refreshing = false;
@@ -835,7 +835,7 @@ var app = new Vue({
       });
     },
     showSmallPayTypesFn() {
-      this.http('api/smallType.php', {
+      this.http('api/smallType', {
         info: 'select_pay',
       }).then((e) => {
         this.refreshing = false;
@@ -876,85 +876,81 @@ var app = new Vue({
         this.showKeyBoardToInsertFn(d, btype);
       }
       if (this.selectTypePopup.next == 'changeType') {
-        let beforeData = this.selectTypePopup.before;
-        console.log(JSON.stringify(beforeData));
-        console.log(JSON.stringify(d));
-        let tid;
+        let beforeData = this.selectTypePopup.before
+        console.log(JSON.stringify(beforeData))
+        console.log(JSON.stringify(d))
+        let tid
         if (btype == 1) {
-          tid = d.btype;
+          tid = d.btype
         }
         let postData = {
           info: 'update_type',
           id: beforeData.id,
-          tid: d.id,
-        };
+          tid: d.id
+        }
         // 修改为同支出/收入类型，直接修改类型id
         if (beforeData.tt == d.t) {
-          let api = 'api/accountBook.php';
+          let api = 'api/accountBook'
           if (d.t == 1) {
-            api = 'api/income.php';
+            api = 'api/income'
           }
           this.http(api, postData).then((e) => {
-            this.selectTypePopup.show = false;
-            this.showAccountBookByMonthFn();
+            this.selectTypePopup.show = false
+            this.showAccountBookByMonthFn()
             if (typeof e.d == 'stirng') {
-              vant.Toast(e.d);
+              vant.Toast(e.d)
             }
-          });
+          })
         } else {
           // 修改为不同类型，如，支出 变为 收入； 先新增数据再删除
-          let deleteApi =
-            beforeData.tt == 1 ? 'api/income.php' : 'api/accountBook.php';
-          let insertApi = d.t == 1 ? 'api/income.php' : 'api/accountBook.php';
+          let deleteApi = beforeData.tt == 1 ? 'api/income' : 'api/accountBook'
+          let insertApi = d.t == 1 ? 'api/income' : 'api/accountBook'
           this.http(insertApi, {
             info: 'insert',
             tid: d.id,
             n: beforeData.n,
             m: beforeData.m,
-            d: beforeData.d,
+            d: beforeData.d
           }).then((e) => {
             if (e.tip == 1) {
               this.http(deleteApi, {
                 info: 'delete',
-                id: beforeData.id,
+                id: beforeData.id
               }).then((e) => {
-                this.selectTypePopup.show = false;
-                this.showAccountBookByMonthFn();
-                vant.Toast('分类修改为 ' + d.n + ' 成功');
-              });
+                this.selectTypePopup.show = false
+                this.showAccountBookByMonthFn()
+                vant.Toast('分类修改为 ' + d.n + ' 成功')
+              })
             } else {
-              this.selectTypePopup.show = false;
-              vant.Toast(e.d);
+              this.selectTypePopup.show = false
+              vant.Toast(e.d)
             }
-          });
+          })
         }
       }
       if (this.selectTypePopup.next == 'payBudget') {
         let finder = this.payBudgetMonthList.small.findIndex((e) => {
-          return e.sid == d.id;
-        });
-        console.log(finder);
+          return e.sid == d.id
+        })
+        console.log(finder)
         if (finder > -1) {
-          vant.Toast('此分类已做预算');
-          return;
+          vant.Toast('此分类已做预算')
+          return
         } else {
-          this.prompt.go(
-            this.payBudgetMonthList.d + ' ' + d.n + '的预算/元',
-            (v) => {
-              let postDataJson = {
-                info: 'insert',
-                tid: d.id,
-                m: v * 100,
-                d: new Date().format('yyyy-MM'),
-              };
-              this.http('api/payBudget.php', postDataJson).then((e) => {
-                this.selectTypePopup.show = false;
-                if (e.tip == 1) {
-                  this.showPayBudgetByMonthFn_refresh();
-                }
-              });
-            },
-          );
+          this.prompt.go(this.payBudgetMonthList.d + ' ' + d.n + '的预算/元', (v) => {
+            let postDataJson = {
+              info: 'insert',
+              tid: d.id,
+              m: v * 100,
+              d: new Date().format('yyyy-MM')
+            }
+            this.http('api/payBudget', postDataJson).then((e) => {
+              this.selectTypePopup.show = false
+              if (e.tip == 1) {
+                this.showPayBudgetByMonthFn_refresh()
+              }
+            })
+          })
         }
       }
     },
@@ -969,7 +965,7 @@ var app = new Vue({
         month: this.payBudgetMonthList.d,
       };
 
-      this.http('api/payBudget.php', postDataJson).then((e) => {
+      this.http('api/payBudget', postDataJson).then((e) => {
         this.refreshing = false;
         this.payBudgetMonthList.visible = false;
         if (e.tip == 1) {
@@ -1024,7 +1020,7 @@ var app = new Vue({
       this.keyboard.show = true;
       this.keyboard.onConfirmCallBackFn = () => {
         let api =
-          this.keyboard.type == 1 ? 'api/income.php' : 'api/accountBook.php';
+          this.keyboard.type == 1 ? 'api/income' : 'api/accountBook';
         console.log(
           api,
           this.keyboard.tid,
@@ -1099,7 +1095,7 @@ var app = new Vue({
         info: 'delete',
         ids: ids,
       };
-      this.http('api/payBudget.php', postDataJson).then((e) => {
+      this.http('api/payBudget', postDataJson).then((e) => {
         vant.Toast(e.d);
         this.showPayBudgetByMonthFn_refresh();
       });
@@ -1113,7 +1109,7 @@ var app = new Vue({
           m: v * 100,
           d: d.d,
         };
-        this.http('api/payBudget.php', postDataJson).then((e) => {
+        this.http('api/payBudget', postDataJson).then((e) => {
           this.selectTypePopup.show = false;
           this.payBudgetMonthListSmallDetail.show = false;
           if (e.tip == 1) {
@@ -1152,7 +1148,7 @@ var app = new Vue({
     },
 
     showAccountBookDetailByTypeFn(d) {
-      this.http('api/accountBook.php', {
+      this.http('api/accountBook', {
         info: 'selectPayDetailBySidAndTime',
         id: d.sid,
         t: 'month',
@@ -1166,7 +1162,7 @@ var app = new Vue({
       });
     },
     showAccountBookDetailByTimeFn() {
-      this.http('api/accountBook.php', {
+      this.http('api/accountBook', {
         info: 'selectPayDetailByTime',
         t: this.chart.type,
         d: this.chart.time,
