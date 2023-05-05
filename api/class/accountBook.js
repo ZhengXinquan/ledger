@@ -10,10 +10,12 @@ class ClassName {
     return new Promise(async (resolve, reject) => {
       try {
         const doc = {
-          id: sid_,
+          sid: Number(sid_),
           aname: aname_,
-          amoney: amoney,
-          aday: aday_
+          amoney: Number(amoney),
+          aday: aday_,
+          atime: moment().format('yyyy-MM-DD HH:mm:SS'),
+          cid: 0
         }
         const result = await this.COLLECTION.insertOne(doc)
 
@@ -106,7 +108,7 @@ class ClassName {
             $project: {
               //决定要显示的字段，相当于select的作用
               _id: 0,
-              id: 1,
+              id: '$_id',
               // smallTypes: 1,
               // bigTypes: 1,
               tid: '$smallTypes.id',
@@ -194,7 +196,7 @@ class ClassName {
               $project: {
                 //决定要显示的字段，相当于select的作用
                 _id: 0,
-                id: 1,
+                id: '$_id',
                 bid: 1,
                 tid: '$bigTypes.id',
                 tt: '$bigTypes.btype',
@@ -260,7 +262,7 @@ class ClassName {
             $project: {
               //决定要显示的字段，相当于select的作用
               _id: 0,
-              id: 1,
+              id: '$_id',
               bid: '$big.id',
               tid: '$smallTypes.id',
               tn: '$smallTypes.sname',
