@@ -6,7 +6,27 @@ class ClassName {
     this.tableName = 'zz_book'
     this.defaultSalt = 'grxs'
   }
-  add(o) {}
+  insert(sid_, aname_, amoney, aday_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const database = client.db('hdm189315162_db')
+        const accountBooks = database.collection('aa_account_book')
+
+        const doc = {
+          id: sid_,
+          aname: aname_,
+          amoney: amoney,
+          aday: aday_
+        }
+        const result = await accountBooks.insertOne(doc)
+
+        resolve(RES.success('Succeed insert account_book '))
+      } finally {
+        resolve(RES.error('Insert failed'))
+        await client.close()
+      }
+    })
+  }
 
   selectPayDetailByTime(time_, type_) {
     return new Promise(async (resolve, reject) => {
