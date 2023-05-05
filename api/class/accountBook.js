@@ -3,22 +3,19 @@ const RES = require('../utils/res')
 const moment = require('moment')
 class ClassName {
   constructor(TOKEN_USER_INFO) {
-    this.tableName = 'zz_book'
-    this.defaultSalt = 'grxs'
+    this.DATABASE = client.db('hdm189315162_db')
+    this.COLLECTION = this.DATABASE.collection('aa_account_book')
   }
   insert(sid_, aname_, amoney, aday_) {
     return new Promise(async (resolve, reject) => {
       try {
-        const database = client.db('hdm189315162_db')
-        const accountBooks = database.collection('aa_account_book')
-
         const doc = {
           id: sid_,
           aname: aname_,
           amoney: amoney,
           aday: aday_
         }
-        const result = await accountBooks.insertOne(doc)
+        const result = await this.COLLECTION.insertOne(doc)
 
         resolve(RES.success('Succeed insert account_book '))
       } finally {
@@ -31,8 +28,6 @@ class ClassName {
   selectPayDetailByTime(time_, type_) {
     return new Promise(async (resolve, reject) => {
       try {
-        const database = client.db('hdm189315162_db')
-        const accountBooks = database.collection('aa_account_book')
         let year_ = ''
         let month_ = ''
         let week_ = ''
@@ -64,81 +59,79 @@ class ClassName {
         }
         console.log(conditions)
 
-        const list = await accountBooks
-          .aggregate([
-            {
-              $addFields: {
-                adayDate: {
-                  $dateFromString: {
-                    dateString: '$aday'
-                  }
+        const list = await this.COLLECTION.aggregate([
+          {
+            $addFields: {
+              adayDate: {
+                $dateFromString: {
+                  dateString: '$aday'
                 }
               }
-            },
-            {
-              $addFields: {
-                year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
-                week: { $isoWeek: { date: '$adayDate', timezone: '+0800' } },
-                month: { $month: { date: '$adayDate', timezone: '+0800' } }
-              }
-            },
-            {
-              $match: conditions
-            },
-            {
-              $lookup: {
-                localField: 'sid', // 左集合 join 字段
-                from: 'aa_small_type', // 右集合
-                foreignField: 'id', // 右集合 join 字段
-                as: 'smallTypes' // 新生成字段（类型array）
-              }
-            },
-            { $unwind: '$smallTypes' },
-            {
-              $addFields: {
-                bid: '$smallTypes.bid'
-              }
-            },
-            {
-              $lookup: {
-                localField: 'bid', // 左集合 join 字段
-                from: 'aa_big_type', // 右集合
-                foreignField: 'id', // 右集合 join 字段
-                as: 'bigTypes' // 新生成字段（类型array）
-              }
-            },
-            { $unwind: '$bigTypes' },
-            {
-              $project: {
-                //决定要显示的字段，相当于select的作用
-                _id: 0,
-                id: 1,
-                // smallTypes: 1,
-                // bigTypes: 1,
-                tid: '$smallTypes.id',
-                tn: '$smallTypes.sname',
-
-                bid: '$bigTypes.id',
-                bn: '$bigTypes.bname',
-
-                n: '$aname',
-                m: '$amoney',
-                d: '$aday',
-                t: '$atime'
-                // dd: '$adayDate',
-                // y: '$year',
-                // w: '$week'
-              }
-            },
-
-            {
-              $sort: {
-                d: -1,
-                t: -1
-              }
             }
-          ])
-          .toArray()
+          },
+          {
+            $addFields: {
+              year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
+              week: { $isoWeek: { date: '$adayDate', timezone: '+0800' } },
+              month: { $month: { date: '$adayDate', timezone: '+0800' } }
+            }
+          },
+          {
+            $match: conditions
+          },
+          {
+            $lookup: {
+              localField: 'sid', // 左集合 join 字段
+              from: 'aa_small_type', // 右集合
+              foreignField: 'id', // 右集合 join 字段
+              as: 'smallTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$smallTypes' },
+          {
+            $addFields: {
+              bid: '$smallTypes.bid'
+            }
+          },
+          {
+            $lookup: {
+              localField: 'bid', // 左集合 join 字段
+              from: 'aa_big_type', // 右集合
+              foreignField: 'id', // 右集合 join 字段
+              as: 'bigTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$bigTypes' },
+          {
+            $project: {
+              //决定要显示的字段，相当于select的作用
+              _id: 0,
+              id: 1,
+              // smallTypes: 1,
+              // bigTypes: 1,
+              tid: '$smallTypes.id',
+              tn: '$smallTypes.sname',
+
+              bid: '$bigTypes.id',
+              bn: '$bigTypes.bname',
+
+              n: '$aname',
+              m: '$amoney',
+              d: '$aday',
+              t: '$atime'
+              // dd: '$adayDate',
+              // y: '$year',
+              // w: '$week'
+            }
+          },
+
+          {
+            $sort: {
+              d: -1,
+              t: -1
+            }
+          }
+        ]).toArray()
 
         const sum = list.reduce((pre, cur) => {
           return pre + Number(cur.m)
@@ -159,9 +152,7 @@ class ClassName {
   select(aday_) {
     return new Promise(async (resolve, reject) => {
       try {
-        const database = client.db('hdm189315162_db')
-        const accountIncomes = database.collection('aa_income')
-        const accountBooks = database.collection('aa_account_book')
+        const accountIncomes = this.DATABASE.collection('aa_income')
 
         const time_arr = aday_.split('-') ////2020-10
 
@@ -223,72 +214,70 @@ class ClassName {
           ])
           .toArray()
 
-        const list2 = await accountBooks
-          .aggregate([
-            {
-              $addFields: {
-                adayDate: {
-                  $dateFromString: {
-                    dateString: '$aday'
-                  }
+        const list2 = await this.COLLECTION.aggregate([
+          {
+            $addFields: {
+              adayDate: {
+                $dateFromString: {
+                  dateString: '$aday'
                 }
               }
-            },
-            {
-              $addFields: {
-                year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
-                month: { $month: { date: '$adayDate', timezone: '+0800' } }
-              }
-            },
-            {
-              $match: conditions
-            },
-            {
-              $lookup: {
-                localField: 'sid', // 左集合 join 字段
-                from: 'aa_small_type', // 右集合
-                foreignField: 'id', // 右集合 join 字段
-                as: 'smallTypes' // 新生成字段（类型array）
-              }
-            },
-            { $unwind: '$smallTypes' },
-            {
-              $addFields: {
-                bid: '$smallTypes.bid'
-              }
-            },
-            {
-              $lookup: {
-                localField: 'bid', // 左集合 join 字段
-                from: 'aa_big_type', // 右集合
-                foreignField: 'id', // 右集合 join 字段
-                as: 'bigTypes' // 新生成字段（类型array）
-              }
-            },
-            { $unwind: '$bigTypes' },
-            {
-              $project: {
-                //决定要显示的字段，相当于select的作用
-                _id: 0,
-                id: 1,
-                bid: '$big.id',
-                tid: '$smallTypes.id',
-                tn: '$smallTypes.sname',
-                tt: '$bigTypes.btype',
-                bn: '$bigTypes.bname',
-                n: '$aname',
-                m: '$amoney',
-                d: '$aday',
-                t: '$atime',
-                dd: '$adayDate',
-                y: '$year',
-                w: '$week',
-                rowType: 'a-book'
-                // B_result: '$B_list.result'
-              }
             }
-          ])
-          .toArray()
+          },
+          {
+            $addFields: {
+              year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
+              month: { $month: { date: '$adayDate', timezone: '+0800' } }
+            }
+          },
+          {
+            $match: conditions
+          },
+          {
+            $lookup: {
+              localField: 'sid', // 左集合 join 字段
+              from: 'aa_small_type', // 右集合
+              foreignField: 'id', // 右集合 join 字段
+              as: 'smallTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$smallTypes' },
+          {
+            $addFields: {
+              bid: '$smallTypes.bid'
+            }
+          },
+          {
+            $lookup: {
+              localField: 'bid', // 左集合 join 字段
+              from: 'aa_big_type', // 右集合
+              foreignField: 'id', // 右集合 join 字段
+              as: 'bigTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$bigTypes' },
+          {
+            $project: {
+              //决定要显示的字段，相当于select的作用
+              _id: 0,
+              id: 1,
+              bid: '$big.id',
+              tid: '$smallTypes.id',
+              tn: '$smallTypes.sname',
+              tt: '$bigTypes.btype',
+              bn: '$bigTypes.bname',
+              n: '$aname',
+              m: '$amoney',
+              d: '$aday',
+              t: '$atime',
+              dd: '$adayDate',
+              y: '$year',
+              w: '$week',
+              rowType: 'a-book'
+              // B_result: '$B_list.result'
+            }
+          }
+        ]).toArray()
         const res = list.concat(list2)
         res.sort((a, b) => {
           return new Date(b.d) - new Date(a.d)
