@@ -4,9 +4,30 @@ const moment = require('moment')
 class ClassName {
   constructor(TOKEN_USER_INFO) {
     this.DATABASE = client.db('hdm189315162_db')
-    this.COLLECTION = this.DATABASE.collection('aa_big_type')
+    this.COLLECTION = this.DATABASE.collection('aa_income')
   }
-  add(o) {}
+  insert(bid_, iname_, imoney, iday_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const doc = {
+          bid: Number(bid_),
+          iname: iname_,
+          imoney: Number(imoney),
+          iday: iday_,
+          itime: moment().format('yyyy-MM-DD HH:mm:SS'),
+          cid: 0
+        }
+        const result = await this.COLLECTION.insertOne(doc)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success('Succeed insert account_book '))
+      } finally {
+        resolve(RES.error('Insert failed'))
+        await client.close()
+      }
+    })
+  }
 
   select(btype_ = 2) {
     return new Promise(async (resolve, reject) => {
@@ -38,7 +59,7 @@ class ClassName {
           sort: { bpx: -1 },
           projection: {
             _id: 0,
-            id: 1,
+            id: '_id',
             t: '$btype',
             n: '$bname',
             bn: '$bname',

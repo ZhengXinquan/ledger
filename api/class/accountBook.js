@@ -6,6 +6,201 @@ class ClassName {
     this.DATABASE = client.db('hdm189315162_db')
     this.COLLECTION = this.DATABASE.collection('aa_account_book')
   }
+  selectBillByYear(year_) {
+    return new Promise(async (resolve, reject) => {
+      const conditions = {
+        year: Number(year_)
+      }
+      let list = await this.COLLECTION.aggregate([
+        {
+          $addFields: {
+            dayDate: {
+              $dateFromString: {
+                dateString: '$aday'
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
+            yearMonth: {
+              $dateToString: {
+                format: '%Y-%m',
+                date: '$dayDate'
+              }
+            },
+            year: { $year: { date: '$dayDate', timezone: '+0800' } },
+            month: { $month: { date: '$dayDate', timezone: '+0800' } }
+          }
+        },
+        {
+          $match: conditions
+        },
+        {
+          $group: {
+            _id: '$yearMonth',
+            pay: { $sum: '$amoney' },
+            d: { $first: '$yearMonth' },
+            year: { $first: '$year' },
+            dayDate: { $first: '$dayDate' }
+          }
+        },
+
+        {
+          $lookup: {
+            from: 'aa_income', // 右集合
+            let: {
+              account_book_yearMonth: '$_id'
+            },
+            pipeline: [
+              {
+                $addFields: {
+                  dayDate: {
+                    $dateFromString: {
+                      dateString: '$iday'
+                    }
+                  }
+                }
+              },
+              {
+                $addFields: {
+                  yearMonth: {
+                    $dateToString: {
+                      format: '%Y-%m',
+                      date: '$dayDate'
+                    }
+                  },
+                  year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } }
+                }
+              },
+              {
+                $match: conditions
+              },
+              {
+                $group: {
+                  _id: '$yearMonth',
+                  income: { $sum: '$imoney' }
+                }
+              },
+
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$_id', '$$account_book_yearMonth']
+                  }
+                }
+              }
+            ],
+            as: 'incomes' // 新生成字段（类型array）
+          }
+        },
+        {
+          $lookup: {
+            // localField: 'yearMonth', // 左集合 join 字段
+            from: 'aa_pay_budget', // 右集合
+
+            let: {
+              account_book_yearMonth: '$_id'
+            },
+            pipeline: [
+              {
+                $addFields: {
+                  dayDate: {
+                    $dateFromString: {
+                      dateString: '$pmonth'
+                    }
+                  }
+                }
+              },
+              {
+                $addFields: {
+                  yearMonth: {
+                    $dateToString: {
+                      format: '%Y-%m',
+                      date: '$dayDate'
+                    }
+                  },
+                  year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } }
+                }
+              },
+              {
+                $match: conditions
+              },
+
+              {
+                $group: {
+                  _id: '$yearMonth',
+                  budget: { $sum: '$pmoney' }
+                }
+              },
+
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$_id', '$$account_book_yearMonth']
+                  }
+                }
+              }
+            ],
+            // foreignField: 'yearMonth', // 右集合 join 字段
+            as: 'budgets' // 新生成字段（类型array）
+          }
+        },
+
+        {
+          $project: {
+            _id: 0,
+            d: 1,
+            pay: 1,
+            year: 1,
+            dayDate: 1,
+            income: { $first: '$incomes.income' },
+            budget: { $first: '$budgets.budget' }
+          }
+        },
+        {
+          $sort: {
+            d: -1
+          }
+        }
+      ]).toArray()
+
+      list = list.map((e) => {
+        return {
+          ...e,
+
+          income: e.income || 0,
+          budget: e.budget || 0,
+          lincome: (e.income || 0) - e.pay,
+          lbudget: (e.budget || 0) - e.pay
+        }
+      })
+      let sum1 = 0
+      let sum2 = 0
+      let sum3 = 0
+      let sum4 = 0
+      let sum5 = 0
+      list.forEach((e) => {
+        sum1 += e.pay
+        sum2 += e.income
+        sum3 += e.budget
+        sum4 += e.lincome
+        sum5 += e.lbudget
+      })
+
+      const res = {
+        d: list,
+        pay: sum1,
+        income: sum2,
+        budget: sum3,
+        lincome: sum4,
+        lbudget: sum5
+      }
+
+      console.log('selectBillByYear', list)
+      resolve(RES.success(res))
+    })
+  }
   insert(sid_, aname_, amoney, aday_) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -18,6 +213,8 @@ class ClassName {
           cid: 0
         }
         const result = await this.COLLECTION.insertOne(doc)
+        console.log('result')
+        console.log(result)
 
         resolve(RES.success('Succeed insert account_book '))
       } finally {
@@ -64,7 +261,7 @@ class ClassName {
         const list = await this.COLLECTION.aggregate([
           {
             $addFields: {
-              adayDate: {
+              dayDate: {
                 $dateFromString: {
                   dateString: '$aday'
                 }
@@ -73,9 +270,9 @@ class ClassName {
           },
           {
             $addFields: {
-              year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
-              week: { $isoWeek: { date: '$adayDate', timezone: '+0800' } },
-              month: { $month: { date: '$adayDate', timezone: '+0800' } }
+              year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+              week: { $isoWeek: { date: '$dayDate', timezone: '+0800' } },
+              month: { $month: { date: '$dayDate', timezone: '+0800' } }
             }
           },
           {
@@ -121,7 +318,7 @@ class ClassName {
               m: '$amoney',
               d: '$aday',
               t: '$atime'
-              // dd: '$adayDate',
+              // dd: '$dayDate',
               // y: '$year',
               // w: '$week'
             }
@@ -167,17 +364,17 @@ class ClassName {
           .aggregate([
             {
               $addFields: {
-                adayDate: {
+                dayDate: {
                   $dateFromString: {
-                    dateString: '$aday'
+                    dateString: '$iday'
                   }
                 }
               }
             },
             {
               $addFields: {
-                year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
-                month: { $month: { date: '$adayDate', timezone: '+0800' } }
+                year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+                month: { $month: { date: '$dayDate', timezone: '+0800' } }
               }
             },
             {
@@ -206,7 +403,7 @@ class ClassName {
                 m: '$imoney',
                 d: '$iday',
                 t: '$itime',
-                dd: '$adayDate',
+                dd: '$dayDate',
                 y: '$year',
                 w: '$week',
                 rowType: 'income'
@@ -219,7 +416,7 @@ class ClassName {
         const list2 = await this.COLLECTION.aggregate([
           {
             $addFields: {
-              adayDate: {
+              dayDate: {
                 $dateFromString: {
                   dateString: '$aday'
                 }
@@ -228,8 +425,8 @@ class ClassName {
           },
           {
             $addFields: {
-              year: { $isoWeekYear: { date: '$adayDate', timezone: '+0800' } },
-              month: { $month: { date: '$adayDate', timezone: '+0800' } }
+              year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+              month: { $month: { date: '$dayDate', timezone: '+0800' } }
             }
           },
           {
@@ -272,7 +469,7 @@ class ClassName {
               m: '$amoney',
               d: '$aday',
               t: '$atime',
-              dd: '$adayDate',
+              dd: '$dayDate',
               y: '$year',
               w: '$week',
               rowType: 'a-book'
@@ -281,6 +478,9 @@ class ClassName {
           }
         ]).toArray()
         const res = list.concat(list2)
+        res.sort((a, b) => {
+          return new Date(b.t) - new Date(a.t)
+        })
         res.sort((a, b) => {
           return new Date(b.d) - new Date(a.d)
         })

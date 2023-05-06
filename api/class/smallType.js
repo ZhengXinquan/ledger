@@ -2,7 +2,10 @@ const client = require('./mongodb')
 const RES = require('../utils/res')
 const moment = require('moment')
 class ClassName {
-  constructor(TOKEN_USER_INFO) {}
+  constructor(TOKEN_USER_INFO) {
+    this.DATABASE = client.db('hdm189315162_db')
+    this.COLLECTION = this.DATABASE.collection('aa_small_type')
+  }
   add(o) {}
 
   select(btype_ = 2) {
@@ -16,8 +19,6 @@ class ClassName {
       //   ORDER BY s.spx desc
 
       try {
-        const database = client.db('hdm189315162_db')
-        const CollectionObj = database.collection('aa_small_type')
         let year_ = ''
         let month_ = ''
         let week_ = ''
@@ -25,7 +26,7 @@ class ClassName {
           sshow: 1,
           btype: btype_
         }
-        const list = await CollectionObj.aggregate([
+        const list = await this.COLLECTION.aggregate([
           {
             $lookup: {
               localField: 'bid', // 左集合 join 字段

@@ -9,11 +9,9 @@ async function OnRequest(request, response) {
   console.log('Account Book request', request.body.info)
 
   switch (Info) {
-    case 'selectPayDetailByTime':
+    case 'selectBillByYear':
       {
-        const $time_ = POST.d
-        const $type_ = POST.t
-        ClassObj.selectPayDetailByTime($time_, $type_)
+        ClassObj.selectBillByYear(POST.year)
           .then((res) => {
             response.end(JSON.stringify(res))
           })
@@ -22,6 +20,25 @@ async function OnRequest(request, response) {
             response.send(FILE_DIR + 'err')
             response.end()
           })
+      }
+      break
+    case 'selectPayDetailByTime':
+      {
+        if (POST.d && POST.t) {
+          const $time_ = POST.d
+          const $type_ = POST.t
+          ClassObj.selectPayDetailByTime($time_, $type_)
+            .then((res) => {
+              response.end(JSON.stringify(res))
+            })
+            .catch((err) => {
+              console.log(err)
+              response.send(FILE_DIR + 'err')
+              response.end()
+            })
+        } else {
+          response.end(JSON.stringify({ tip: 0, d: [], msg: 'arg err' }))
+        }
       }
       break
 
@@ -52,7 +69,7 @@ async function OnRequest(request, response) {
               response.end()
             })
         } else {
-          response.end({ tip: 0, d: [], msg: 'arg err' })
+          response.end(JSON.stringify({ tip: 0, d: [], msg: 'arg err' }))
         }
       }
       break
