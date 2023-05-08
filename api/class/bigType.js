@@ -1,4 +1,4 @@
-const client = require('./mongodb')
+const { client } = require('./mongodb')
 const RES = require('../utils/res')
 const moment = require('moment')
 class ClassName {

@@ -41,6 +41,23 @@ async function OnRequest(request, response) {
         }
       }
       break
+    case 'selectPayDetailBySidAndTime':
+      {
+        if (POST.d && POST.t && POST.id) {
+          ClassObj.selectPayDetailBySidAndTime(POST.id, POST.d, POST.t)
+            .then((res) => {
+              response.end(JSON.stringify(res))
+            })
+            .catch((err) => {
+              console.log(err)
+              response.send(FILE_DIR + 'err')
+              response.end()
+            })
+        } else {
+          response.end(JSON.stringify({ tip: 0, d: [], msg: 'arg err' }))
+        }
+      }
+      break
 
     case 'insert':
       {

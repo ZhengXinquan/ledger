@@ -1,4 +1,4 @@
-const client = require('./mongodb')
+const { client } = require('./mongodb')
 const RES = require('../utils/res')
 const moment = require('moment')
 class ClassName {
@@ -69,25 +69,20 @@ class ClassName {
                       format: '%Y-%m',
                       date: '$dayDate'
                     }
-                  },
-                  year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } }
+                  }
                 }
               },
               {
-                $match: conditions
+                $match: {
+                  $expr: {
+                    $eq: ['$yearMonth', '$$account_book_yearMonth']
+                  }
+                }
               },
               {
                 $group: {
                   _id: '$yearMonth',
                   income: { $sum: '$imoney' }
-                }
-              },
-
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$_id', '$$account_book_yearMonth']
-                  }
                 }
               }
             ],
@@ -119,26 +114,21 @@ class ClassName {
                       format: '%Y-%m',
                       date: '$dayDate'
                     }
-                  },
-                  year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } }
+                  }
                 }
               },
               {
-                $match: conditions
+                $match: {
+                  $expr: {
+                    $eq: ['$yearMonth', '$$account_book_yearMonth']
+                  }
+                }
               },
 
               {
                 $group: {
                   _id: '$yearMonth',
                   budget: { $sum: '$pmoney' }
-                }
-              },
-
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$_id', '$$account_book_yearMonth']
-                  }
                 }
               }
             ],
@@ -201,6 +191,114 @@ class ClassName {
       resolve(RES.success(res))
     })
   }
+  selectPayDetailBySidAndTime(sid_, time_, type_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let year_ = ''
+        let month_ = ''
+        let week_ = ''
+        let conditions = {}
+
+        if (type_ == 'week') {
+          let time_arr = time_.split('-') //2020-42 2020年第42周 周一为一周的第一天
+          year_ = Number(time_arr[0])
+          sid_ = Number(sid_)
+          conditions = {
+            sid: sid_,
+            weekYear: year_,
+            week: week_
+          }
+        }
+        if (type_ == 'month') {
+          let time_arr = time_.split('-') ////2020-10
+          year_ = Number(time_arr[0])
+          month_ = Number(time_arr[1])
+          sid_ = Number(sid_)
+          conditions = {
+            sid: sid_,
+            year: year_,
+            month: month_
+          }
+        }
+        if (type_ == 'year') {
+          year_ = Number(time_) //2020
+          sid_ = Number(sid_)
+          conditions = {
+            sid: sid_,
+            year: year_
+          }
+        }
+        console.log(conditions)
+
+        const list = await this.COLLECTION.aggregate([
+          {
+            $addFields: {
+              dayDate: {
+                $dateFromString: {
+                  dateString: '$aday'
+                }
+              }
+            }
+          },
+          {
+            $addFields: {
+              weekYear: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+              week: { $isoWeek: { date: '$dayDate', timezone: '+0800' } },
+              year: { $year: { date: '$dayDate', timezone: '+0800' } },
+              month: { $month: { date: '$dayDate', timezone: '+0800' } }
+            }
+          },
+          {
+            $match: conditions
+          },
+          {
+            $lookup: {
+              localField: 'sid', // 左集合 join 字段
+              from: 'aa_small_type', // 右集合
+              foreignField: 'id', // 右集合 join 字段
+              as: 'smallTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$smallTypes' },
+          {
+            $project: {
+              //决定要显示的字段，相当于select的作用
+              _id: 0,
+              id: '$_id',
+              // smallTypes: 1,
+              // bigTypes: 1,
+              tid: '$smallTypes.id',
+              tn: '$smallTypes.sname',
+
+              n: '$aname',
+              m: '$amoney',
+              d: '$aday',
+              t: '$atime'
+              // dd: '$dayDate',
+              // y: '$year',
+              // w: '$week'
+            }
+          },
+
+          {
+            $sort: {
+              m: -1
+            }
+          }
+        ]).toArray()
+
+        const sum = list.reduce((pre, cur) => {
+          return pre + Number(cur.m)
+        }, 0)
+
+        resolve(RES.success({ d: list, sum }))
+      } finally {
+        resolve(RES.error([]))
+        await client.close()
+      }
+    })
+  }
+
   insert(sid_, aname_, amoney, aday_) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -237,7 +335,7 @@ class ClassName {
           year_ = Number(time_arr[0])
           week_ = Number(time_arr[1])
           conditions = {
-            year: year_,
+            weekYear: year_,
             week: week_
           }
         }
@@ -270,8 +368,9 @@ class ClassName {
           },
           {
             $addFields: {
-              year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+              weekYear: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
               week: { $isoWeek: { date: '$dayDate', timezone: '+0800' } },
+              year: { $year: { date: '$dayDate', timezone: '+0800' } },
               month: { $month: { date: '$dayDate', timezone: '+0800' } }
             }
           },
@@ -373,7 +472,7 @@ class ClassName {
             },
             {
               $addFields: {
-                year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+                year: { $year: { date: '$dayDate', timezone: '+0800' } },
                 month: { $month: { date: '$dayDate', timezone: '+0800' } }
               }
             },
@@ -425,7 +524,7 @@ class ClassName {
           },
           {
             $addFields: {
-              year: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
+              year: { $year: { date: '$dayDate', timezone: '+0800' } },
               month: { $month: { date: '$dayDate', timezone: '+0800' } }
             }
           },
