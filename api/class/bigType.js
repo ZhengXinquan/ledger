@@ -1,51 +1,102 @@
+const MODULE_NAME = 'aa_big_type'
 const { RES, client, ObjectId, moment } = require('./utils')
-class ClassName {
+class Clasbname {
   constructor(TOKEN_USER_INFO) {
     this.DATABASE = client.db('hdm189315162_db')
-    this.COLLECTION = this.DATABASE.collection('aa_big_type')
+    this.COLLECTION = this.DATABASE.collection(MODULE_NAME)
   }
-  add(o) {}
 
-  select(btype_ = 2) {
+  insert(bname_, btype_) {
     return new Promise(async (resolve, reject) => {
-      /**
-       * SELECT
-       * id,
-       * btype as t,
-       * bname as n,
-       * bname as bn,
-       * bshow as s ,
-       * bpx as i
-       *
-       * From `aa_big_type`
-       *
-       * WHERE bshow = 1 AND btype = '$btype_'
-       *
-       *  ORDER BY bpx desc
-       */
+      try {
+        const doc = {
+          bname: bname_,
+          btype: Number(btype_),
+          bshow: 1,
+          bpx: 0
+        }
+        const result = await this.COLLECTION.insertOne(doc)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success(MODULE_NAME + ' Succeed insert'))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' Insert failed'))
+        await client.close()
+      }
+    })
+  }
+  updateName(id_, bname_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            bname: bname_
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success(MODULE_NAME + ' Succeed updateName '))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' updateName failed'))
+        await client.close()
+      }
+    })
+  }
+  updatePX(id_, bpx_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            bpx: Number(bpx_)
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success(MODULE_NAME + ' Succeed updatePX '))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' updatePX failed'))
+        await client.close()
+      }
+    })
+  }
+  select(btype_ = 2, bshow_ = 1) {
+    return new Promise(async (resolve, reject) => {
+      // SELECT
+      // s.id,s.bid,b.btype as t,s.bname as n,b.bname as bn,s.bshow as s,s.bpx as i
+      // From `aa_small_type` s
+      //  LEFT JOIN `aa_big_type` b
+      //  ON s.bid=b.id
+      //   WHERE s.bshow = 1 AND b.btype = '$btype_'
+      //   ORDER BY s.bpx desc
 
       try {
-        let year_ = ''
-        let month_ = ''
-        let week_ = ''
         let conditions = {
-          bshow: 1,
-          btype: btype_
+          btype: Number(btype_)
         }
+        if (bshow_ !== false) {
+          conditions['bshow'] = Number(bshow_)
+        }
+
         const options = {
-          sort: { bpx: -1 },
           projection: {
             _id: 0,
-            id: 1,
-            t: '$btype',
+            id: '$_id',
             n: '$bname',
             bn: '$bname',
             s: '$bshow',
             i: '$bpx'
           }
         }
+        const list = await this.COLLECTION.find(conditions, options).sort({ bpx: -1 }).toArray()
+        console.log(list)
 
-        const list = await this.COLLECTION.find(conditions, options).toArray()
         resolve(RES.success(list))
       } finally {
         resolve(RES.error([]))
@@ -53,6 +104,9 @@ class ClassName {
       }
     })
   }
+  selectAll(btype_ = 2) {
+    return this.select(btype_, false)
+  }
 }
 
-module.exports = ClassName
+module.exports = Clasbname

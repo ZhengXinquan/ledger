@@ -1,96 +1,37 @@
-const FILE_DIR = 'api/payBudget.js'
-const ClassModel = require('./class/payBudget')
+const MODULE_NAME = 'payBudget'
+const FILE_DIR = 'api/' + MODULE_NAME + '.js'
+const { call, RES } = require('./class/utils')
+const ClassModel = require('./class/' + MODULE_NAME)
 const ClassObj = new ClassModel()
 
 async function OnRequest(request, response) {
   const POST = request.body
   const Info = POST['info']
-
-  console.log('Account Book request', request.body.info)
-
+  console.log(MODULE_NAME + ' request', request.body.info)
   switch (Info) {
     case 'copy_by_month':
-      {
-        ClassObj.copy(POST.month)
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+      call(ClassObj.copy(POST.month), response)
       break
     case 'select_by_month':
-      {
-        ClassObj.select(POST.month)
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+      call(ClassObj.select(POST.month), response)
       break
     case 'delete':
-      {
-        ClassObj.delete(POST.ids)
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+      call(ClassObj.delete(POST.ids), response)
       break
 
     case 'insert':
-      {
-        ClassObj.insert(POST.tid, POST.m, POST.d + '-01')
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+      call(ClassObj.insert(POST.tid, POST.m, POST.d + '-01'), response)
       break
 
     case 'update_type':
-      {
-        ClassObj.updateType(POST.id, POST.tid)
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+      call(ClassObj.updateType(POST.id, POST.tid), response)
       break
 
     case 'update_detail':
-      {
-        ClassObj.updateDetail(POST.id, POST.m, POST.d)
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+      call(ClassObj.updateDetail(POST.id, POST.m, POST.d), response)
       break
     default:
+      response.end(JSON.stringify(RES.error(`${FILE_DIR} : ${Info}  err`)))
   }
 }
 

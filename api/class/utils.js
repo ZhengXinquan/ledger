@@ -36,4 +36,16 @@ class RES {
   }
 }
 
-module.exports = { client, ObjectId, RES: new RES(), moment }
+function call(promise, response) {
+  promise
+    .then((res) => {
+      response.end(JSON.stringify(res))
+    })
+    .catch((err) => {
+      console.log(err)
+      response.send(FILE_DIR + 'err')
+      response.end()
+    })
+}
+
+module.exports = { client, ObjectId, RES: new RES(), moment, call }

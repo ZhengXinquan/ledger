@@ -1,4 +1,5 @@
-const { RES, client, ObjectId, moment } = require('./utils')class ClassName {
+const { RES, client, ObjectId, moment } = require('./utils')
+class ClassName {
   constructor(TOKEN_USER_INFO) {
     this.DATABASE = client.db('hdm189315162_db')
     this.COLLECTION = this.DATABASE.collection('aa_pay_budget')
