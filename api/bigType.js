@@ -1,4 +1,4 @@
-const FILE_DIR = 'api/accountbook.js'
+const FILE_DIR = 'api/bitType.js'
 const ClassModel = require('./class/bigType')
 const ClassObj = new ClassModel()
 

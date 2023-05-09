@@ -1,4 +1,4 @@
-const FILE_DIR = 'api/accountbook.js'
+const FILE_DIR = 'api/income.js'
 const ClassModel = require('./class/income')
 const ClassObj = new ClassModel()
 
