@@ -545,7 +545,7 @@ var app = new Vue({
     },
   },
   created() {
-    // this.showAccountBookByMonthFn();
+    this.showAccountBookByMonthFn()
   },
   mounted() {
     this.myChartCreated();
