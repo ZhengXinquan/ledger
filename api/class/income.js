@@ -1,79 +1,95 @@
+const MODULE_NAME = 'aa_income'
 const { RES, client, ObjectId, moment } = require('./utils')
-class ClassName {
+class Clasbname {
   constructor(TOKEN_USER_INFO) {
     this.DATABASE = client.db('hdm189315162_db')
-    this.COLLECTION = this.DATABASE.collection('aa_income')
+    this.COLLECTION = this.DATABASE.collection(MODULE_NAME)
   }
-  insert(bid_, iname_, imoney, iday_) {
+
+  delete(id_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let conditions = {
+          _id: new ObjectId(id_)
+        }
+
+        const result = await this.COLLECTION.deleteOne(conditions)
+        console.log(result, conditions)
+
+        resolve(RES.success(MODULE_NAME + 'Succeed DELETE'))
+      } finally {
+        resolve(RES.error(MODULE_NAME + 'DELETE failed'))
+        await client.close()
+      }
+    })
+  }
+  insert(bid_, iname_, imoney_, iday_) {
     return new Promise(async (resolve, reject) => {
       try {
         const doc = {
-          bid: Number(bid_),
+          bid: bid_,
           iname: iname_,
-          imoney: Number(imoney),
+          imoney: Number(imoney_),
           iday: iday_,
-          itime: moment().format('yyyy-MM-DD HH:mm:SS'),
-          cid: 0
+          _bid:new ObjectId(bid_)
+          _iday: new Date(iday_),
+          _itime: new Date()
         }
         const result = await this.COLLECTION.insertOne(doc)
         console.log('result')
         console.log(result)
 
-        resolve(RES.success('Succeed insert account_book '))
+        resolve(RES.success(MODULE_NAME + ' Succeed insert'))
       } finally {
-        resolve(RES.error('Insert failed'))
+        resolve(RES.error(MODULE_NAME + ' Insert failed'))
         await client.close()
       }
     })
   }
-
-  select(btype_ = 2) {
+  updateType(id_, bid_) {
     return new Promise(async (resolve, reject) => {
-      /**
-       * SELECT
-       * id,
-       * btype as t,
-       * bname as n,
-       * bname as bn,
-       * bshow as s ,
-       * bpx as i
-       *
-       * From `aa_big_type`
-       *
-       * WHERE bshow = 1 AND btype = '$btype_'
-       *
-       *  ORDER BY bpx desc
-       */
-
       try {
-        let year_ = ''
-        let month_ = ''
-        let week_ = ''
-        let conditions = {
-          bshow: 1,
-          btype: btype_
-        }
-        const options = {
-          sort: { bpx: -1 },
-          projection: {
-            _id: 0,
-            id: '_id',
-            t: '$btype',
-            n: '$bname',
-            bn: '$bname',
-            s: '$bshow',
-            i: '$bpx'
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            bid: bid_,
+            _bid:new ObjectId(bid_)
           }
         }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
 
-        const list = await this.COLLECTION.find(conditions, options).toArray()
-        resolve(RES.success(list))
+        resolve(RES.success(MODULE_NAME + ' Succeed updateType '))
       } finally {
-        resolve(RES.error([]))
+        resolve(RES.error(MODULE_NAME + ' updateType failed'))
+        await client.close()
+      }
+    })
+  }
+  updateDetail(id_, iname_,imoney_,iday_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            iname:iname_,
+            imoney: Number(imoney_),
+            _iday:new Date(iday_),
+            iday:iday_
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success(MODULE_NAME + ' Succeed updateDetail '))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' updateDetail failed'))
         await client.close()
       }
     })
   }
 }
 
-module.exports = ClassName
+module.exports = Clasbname

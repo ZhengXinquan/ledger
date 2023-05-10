@@ -12,23 +12,15 @@ class ClassName {
       let list = await this.COLLECTION.aggregate([
         {
           $addFields: {
-            dayDate: {
-              $dateFromString: {
-                dateString: '$aday'
-              }
-            }
-          }
-        },
-        {
-          $addFields: {
             yearMonth: {
               $dateToString: {
                 format: '%Y-%m',
-                date: '$dayDate'
+                date: '$_aday',
+                timezone: '+0800'
               }
             },
-            year: { $year: { date: '$dayDate', timezone: '+0800' } },
-            month: { $month: { date: '$dayDate', timezone: '+0800' } }
+            year: { $year: { date: '$_aday', timezone: '+0800' } },
+            month: { $month: { date: '$_aday', timezone: '+0800' } }
           }
         },
         {
@@ -39,8 +31,6 @@ class ClassName {
             _id: '$yearMonth',
             pay: { $sum: '$amoney' },
             d: { $first: '$yearMonth' },
-            year: { $first: '$year' },
-            dayDate: { $first: '$dayDate' }
           }
         },
 
@@ -51,21 +41,14 @@ class ClassName {
               account_book_yearMonth: '$_id'
             },
             pipeline: [
-              {
-                $addFields: {
-                  dayDate: {
-                    $dateFromString: {
-                      dateString: '$iday'
-                    }
-                  }
-                }
-              },
+    
               {
                 $addFields: {
                   yearMonth: {
                     $dateToString: {
                       format: '%Y-%m',
-                      date: '$dayDate'
+                      date: '$_iday',
+                      timezone: '+0800'
                     }
                   }
                 }
@@ -98,19 +81,11 @@ class ClassName {
             pipeline: [
               {
                 $addFields: {
-                  dayDate: {
-                    $dateFromString: {
-                      dateString: '$pmonth'
-                    }
-                  }
-                }
-              },
-              {
-                $addFields: {
                   yearMonth: {
                     $dateToString: {
                       format: '%Y-%m',
-                      date: '$dayDate'
+                      date: '$_pmonth',
+                      timezone: '+0800'
                     }
                   }
                 }
@@ -140,8 +115,6 @@ class ClassName {
             _id: 0,
             d: 1,
             pay: 1,
-            year: 1,
-            dayDate: 1,
             income: { $first: '$incomes.income' },
             budget: { $first: '$budgets.budget' }
           }
@@ -192,58 +165,33 @@ class ClassName {
   selectPayDetailBySidAndTime(sid_, time_, type_) {
     return new Promise(async (resolve, reject) => {
       try {
-        let year_ = ''
-        let month_ = ''
-        let week_ = ''
-        let conditions = {}
+        const time_arr = time_.split('-')
+        const year_ = Number(time_arr[0])
+        const month_ = Number(time_arr[1]) //2020-10  2020年10月
+        const week_ = Number(time_arr[1]) //2020-42 2020年第42周 周一为一周的第一天
+        const _sid = new ObjectId(sid_)
+        const conditions = { _sid }
 
         if (type_ == 'week') {
-          let time_arr = time_.split('-') //2020-42 2020年第42周 周一为一周的第一天
-          year_ = Number(time_arr[0])
-          sid_ = Number(sid_)
-          conditions = {
-            sid: sid_,
-            weekYear: year_,
-            week: week_
-          }
+          conditions['weekYear'] = year_
+          conditions['week'] = week_
         }
         if (type_ == 'month') {
-          let time_arr = time_.split('-') ////2020-10
-          year_ = Number(time_arr[0])
-          month_ = Number(time_arr[1])
-          sid_ = Number(sid_)
-          conditions = {
-            sid: sid_,
-            year: year_,
-            month: month_
-          }
+          conditions['year'] = year_
+          conditions['month'] = month_
         }
         if (type_ == 'year') {
-          year_ = Number(time_) //2020
-          sid_ = Number(sid_)
-          conditions = {
-            sid: sid_,
-            year: year_
-          }
+          conditions['year'] = year_
         }
         console.log(conditions)
 
         const list = await this.COLLECTION.aggregate([
           {
             $addFields: {
-              dayDate: {
-                $dateFromString: {
-                  dateString: '$aday'
-                }
-              }
-            }
-          },
-          {
-            $addFields: {
-              weekYear: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
-              week: { $isoWeek: { date: '$dayDate', timezone: '+0800' } },
-              year: { $year: { date: '$dayDate', timezone: '+0800' } },
-              month: { $month: { date: '$dayDate', timezone: '+0800' } }
+              weekYear: { $isoWeekYear: { date: '$_aday', timezone: '+0800' } },
+              week: { $isoWeek: { date: '$_aday', timezone: '+0800' } },
+              year: { $year: { date: '$_aday', timezone: '+0800' } },
+              month: { $month: { date: '$_aday', timezone: '+0800' } }
             }
           },
           {
@@ -251,30 +199,36 @@ class ClassName {
           },
           {
             $lookup: {
-              localField: 'sid', // 左集合 join 字段
+              localField: '_sid', // 左集合 join 字段
               from: 'aa_small_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'smallTypes' // 新生成字段（类型array）
             }
           },
           { $unwind: '$smallTypes' },
           {
             $project: {
-              //决定要显示的字段，相当于select的作用
               _id: 0,
               id: '$_id',
-              // smallTypes: 1,
-              // bigTypes: 1,
-              tid: '$smallTypes.id',
+              tid: '$smallTypes._id',
               tn: '$smallTypes.sname',
 
               n: '$aname',
               m: '$amoney',
-              d: '$aday',
-              t: '$atime'
-              // dd: '$dayDate',
-              // y: '$year',
-              // w: '$week'
+              d: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$_aday',
+                  timezone: '+0800'
+                }
+              },
+              t: {
+                $dateToString: {
+                  format: '%Y-%m-%d %H:%M:%S',
+                  date: '$_atime',
+                  timezone: '+0800'
+                }
+              }
             }
           },
 
@@ -292,29 +246,6 @@ class ClassName {
         resolve(RES.success({ d: list, sum }))
       } finally {
         resolve(RES.error([]))
-        await client.close()
-      }
-    })
-  }
-
-  insert(sid_, aname_, amoney, aday_) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const doc = {
-          sid: Number(sid_),
-          aname: aname_,
-          amoney: Number(amoney),
-          aday: aday_,
-          atime: moment().format('yyyy-MM-DD HH:mm:SS'),
-          cid: 0
-        }
-        const result = await this.COLLECTION.insertOne(doc)
-        console.log('result')
-        console.log(result)
-
-        resolve(RES.success('Succeed insert account_book '))
-      } finally {
-        resolve(RES.error('Insert failed'))
         await client.close()
       }
     })
@@ -357,19 +288,10 @@ class ClassName {
         const list = await this.COLLECTION.aggregate([
           {
             $addFields: {
-              dayDate: {
-                $dateFromString: {
-                  dateString: '$aday'
-                }
-              }
-            }
-          },
-          {
-            $addFields: {
-              weekYear: { $isoWeekYear: { date: '$dayDate', timezone: '+0800' } },
-              week: { $isoWeek: { date: '$dayDate', timezone: '+0800' } },
-              year: { $year: { date: '$dayDate', timezone: '+0800' } },
-              month: { $month: { date: '$dayDate', timezone: '+0800' } }
+              weekYear: { $isoWeekYear: { date: '$_aday', timezone: '+0800' } },
+              week: { $isoWeek: { date: '$_aday', timezone: '+0800' } },
+              year: { $year: { date: '$_aday', timezone: '+0800' } },
+              month: { $month: { date: '$_aday', timezone: '+0800' } }
             }
           },
           {
@@ -377,23 +299,23 @@ class ClassName {
           },
           {
             $lookup: {
-              localField: 'sid', // 左集合 join 字段
+              localField: '_sid', // 左集合 join 字段
               from: 'aa_small_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'smallTypes' // 新生成字段（类型array）
             }
           },
           { $unwind: '$smallTypes' },
           {
             $addFields: {
-              bid: '$smallTypes.bid'
+              _bid: '$smallTypes._bid'
             }
           },
           {
             $lookup: {
-              localField: 'bid', // 左集合 join 字段
+              localField: '_bid', // 左集合 join 字段
               from: 'aa_big_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'bigTypes' // 新生成字段（类型array）
             }
           },
@@ -405,16 +327,28 @@ class ClassName {
               id: '$_id',
               // smallTypes: 1,
               // bigTypes: 1,
-              tid: '$smallTypes.id',
+              tid: '$smallTypes._id',
               tn: '$smallTypes.sname',
 
-              bid: '$bigTypes.id',
+              bid: '$bigTypes._id',
               bn: '$bigTypes.bname',
 
               n: '$aname',
               m: '$amoney',
-              d: '$aday',
-              t: '$atime'
+              d: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$_aday',
+                  timezone: '+0800'
+                }
+              },
+              t: {
+                $dateToString: {
+                  format: '%Y-%m-%d %H:%M:%S',
+                  date: '$_atime',
+                  timezone: '+0800'
+                }
+              }
               // dd: '$dayDate',
               // y: '$year',
               // w: '$week'
@@ -440,6 +374,7 @@ class ClassName {
       }
     })
   }
+  search() {}
   /**
    *
    * @param {*} aday_   2023-05
@@ -461,17 +396,8 @@ class ClassName {
           .aggregate([
             {
               $addFields: {
-                dayDate: {
-                  $dateFromString: {
-                    dateString: '$iday'
-                  }
-                }
-              }
-            },
-            {
-              $addFields: {
-                year: { $year: { date: '$dayDate', timezone: '+0800' } },
-                month: { $month: { date: '$dayDate', timezone: '+0800' } }
+                year: { $year: { date: '$_iday', timezone: '+0800' } },
+                month: { $month: { date: '$_iday', timezone: '+0800' } }
               }
             },
             {
@@ -479,9 +405,9 @@ class ClassName {
             },
             {
               $lookup: {
-                localField: 'bid', // 左集合 join 字段
+                localField: '_bid', // 左集合 join 字段
                 from: 'aa_big_type', // 右集合
-                foreignField: 'id', // 右集合 join 字段
+                foreignField: '_id', // 右集合 join 字段
                 as: 'bigTypes' // 新生成字段（类型array）
               }
             },
@@ -491,16 +417,28 @@ class ClassName {
                 //决定要显示的字段，相当于select的作用
                 _id: 0,
                 id: '$_id',
-                bid: 1,
-                tid: '$bigTypes.id',
+                bid: '$_bid',
+                tid: '$bigTypes._id',
                 tt: '$bigTypes.btype',
                 tn: '$bigTypes.bname',
                 bn: '$bigTypes.bname',
                 n: '$iname',
                 m: '$imoney',
-                d: '$iday',
-                t: '$itime',
-                dd: '$dayDate',
+                d: {
+                  $dateToString: {
+                    format: '%Y-%m-%d',
+                    date: '$_iday',
+                    timezone: '+0800'
+                  }
+                },
+                t: {
+                  $dateToString: {
+                    format: '%Y-%m-%d %H:%M:%S',
+                    date: '$_itime',
+                    timezone: '+0800'
+                  }
+                },
+                dd: '$_iday',
                 y: '$year',
                 w: '$week',
                 rowType: 'income'
@@ -513,17 +451,8 @@ class ClassName {
         const list2 = await this.COLLECTION.aggregate([
           {
             $addFields: {
-              dayDate: {
-                $dateFromString: {
-                  dateString: '$aday'
-                }
-              }
-            }
-          },
-          {
-            $addFields: {
-              year: { $year: { date: '$dayDate', timezone: '+0800' } },
-              month: { $month: { date: '$dayDate', timezone: '+0800' } }
+              year: { $year: { date: '$_aday', timezone: '+0800' } },
+              month: { $month: { date: '$_aday', timezone: '+0800' } }
             }
           },
           {
@@ -531,23 +460,23 @@ class ClassName {
           },
           {
             $lookup: {
-              localField: 'sid', // 左集合 join 字段
+              localField: '_sid', // 左集合 join 字段
               from: 'aa_small_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'smallTypes' // 新生成字段（类型array）
             }
           },
           { $unwind: '$smallTypes' },
           {
             $addFields: {
-              bid: '$smallTypes.bid'
+              _bid: '$smallTypes._bid'
             }
           },
           {
             $lookup: {
-              localField: 'bid', // 左集合 join 字段
+              localField: '_bid', // 左集合 join 字段
               from: 'aa_big_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'bigTypes' // 新生成字段（类型array）
             }
           },
@@ -557,16 +486,28 @@ class ClassName {
               //决定要显示的字段，相当于select的作用
               _id: 0,
               id: '$_id',
-              bid: '$big.id',
-              tid: '$smallTypes.id',
+              bid: '$big._id',
+              tid: '$smallTypes._id',
               tn: '$smallTypes.sname',
               tt: '$bigTypes.btype',
               bn: '$bigTypes.bname',
               n: '$aname',
               m: '$amoney',
-              d: '$aday',
-              t: '$atime',
-              dd: '$dayDate',
+              d: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$_aday',
+                  timezone: '+0800'
+                }
+              },
+              t: {
+                $dateToString: {
+                  format: '%Y-%m-%d %H:%M:%S',
+                  date: '$_atime',
+                  timezone: '+0800'
+                }
+              },
+              dd: '$_aday',
               y: '$year',
               w: '$week',
               rowType: 'a-book'
@@ -584,6 +525,93 @@ class ClassName {
         resolve(RES.success(res))
       } finally {
         resolve(RES.error([]))
+        await client.close()
+      }
+    })
+  }
+
+  delete(id_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let conditions = {
+          _id: new ObjectId(id_)
+        }
+
+        const result = await this.COLLECTION.deleteOne(conditions)
+        console.log(result, conditions)
+
+        resolve(RES.success(MODULE_NAME + 'Succeed DELETE'))
+      } finally {
+        resolve(RES.error(MODULE_NAME + 'DELETE failed'))
+        await client.close()
+      }
+    })
+  }
+  updateDetail(id_, aname_, amoney_, aday_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            aname: aname_,
+            amoney: Number(amoney_),
+            aday_: aday_,
+            _aday: new Date(aday_)
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success('Succeed updateDetail budget '))
+      } finally {
+        resolve(RES.error('updateDetail failed'))
+        await client.close()
+      }
+    })
+  }
+  updateType(id_, sid_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            _sid: new ObjectId(sid_),
+            sid: sid_
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success('Succeed updateType budget '))
+      } finally {
+        resolve(RES.error('updateType failed'))
+        await client.close()
+      }
+    })
+  }
+  insert(sid_, aname_, amoney, aday_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const doc = {
+          sid: sid,
+          _sid: new ObjectId(sid_),
+          aname: aname_,
+          amoney: Number(amoney),
+          aday: aday_,
+          _aday: new Date(aday_),
+          atime: moment().format('yyyy-MM-DD HH:mm:SS'),
+          _atime: new Date(),
+          cid: 0
+        }
+        const result = await this.COLLECTION.insertOne(doc)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success('Succeed insert account_book '))
+      } finally {
+        resolve(RES.error('Insert failed'))
         await client.close()
       }
     })

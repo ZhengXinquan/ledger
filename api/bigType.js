@@ -10,17 +10,7 @@ async function OnRequest(request, response) {
   console.log(MODULE_NAME + ' request', request.body.info)
   switch (Info) {
     case 'px':
-      const list = JSON.parse(POST.list)
-      console.log(list)
-
-      // foreach ($obj as $key=>$value)
-      // {
-      // 	$smallType -> updatePX($key,$value,0);
-      // }
-      // $json_data = array('tip' => 1, 'd' => 'success');
-      // echo json_encode($json_data);
-      response.send(FILE_DIR + 'err')
-      response.end()
+      call(ClassObj.updatePXList(JSON.parse(POST.list)), response)
       break
     case 'show':
       call(ClassObj.show(POST.id), response)

@@ -7,26 +7,32 @@ class ClassName {
   copy(month_) {
     return new Promise(async (resolve, reject) => {
       const fullTime = month_ + '-01'
-
       const lastMonth = moment(fullTime).subtract(1, 'months').format('YYYY-MM-DD')
-
       try {
         let conditions = {
-          pmonth: lastMonth
+          _pmonth: new Date(lastMonth)
         }
         const options = {
           projection: {
-            _id: 0,
+            _id: 1,
             id: '$_id',
             sid: 1,
+            _sid: 1,
             pmoney: 1
           }
         }
         const list = await this.COLLECTION.find(conditions, options).toArray()
         console.log(list)
 
+        const _pmonth = new Date(month_)
         const result = await this.COLLECTION.insertMany(
-          list.map((e) => ({ sid: e.sid, pmoney: e.pmoney, pmonth: fullTime }))
+          list.map((e) => ({
+            sid: e.sid,
+            pmoney: e.pmoney,
+            pmonth: fullTime,
+            _sid: new ObjectId(e._sid),
+            _pmonth: _pmonth
+          }))
         )
         console.log('result')
         console.log(result)
@@ -43,7 +49,7 @@ class ClassName {
       const fullTime = month_ + '-01'
       try {
         let conditions = {
-          pmonth: fullTime
+          _pmonth: new Date(month_)
         }
         let list = await this.COLLECTION.aggregate([
           {
@@ -51,23 +57,23 @@ class ClassName {
           },
           {
             $lookup: {
-              localField: 'sid', // 左集合 join 字段
+              localField: '_sid', // 左集合 join 字段
               from: 'aa_small_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'smallTypes' // 新生成字段（类型array）
             }
           },
           // { $unwind: '$smallTypes' },
           {
             $addFields: {
-              bid: { $first: '$smallTypes.bid' }
+              _bid: { $first: '$smallTypes._bid' }
             }
           },
           {
             $lookup: {
-              localField: 'bid', // 左集合 join 字段
+              localField: '_bid', // 左集合 join 字段
               from: 'aa_big_type', // 右集合
-              foreignField: 'id', // 右集合 join 字段
+              foreignField: '_id', // 右集合 join 字段
               as: 'bigTypes' // 新生成字段（类型array）
             }
           },
@@ -77,24 +83,25 @@ class ClassName {
               from: 'aa_account_book', // 右集合
 
               let: {
-                pb_sid: '$sid'
+                pb_sid: '$_sid'
               },
               pipeline: [
-                {
-                  $addFields: {
-                    dayDate: {
-                      $dateFromString: {
-                        dateString: '$aday'
-                      }
-                    }
-                  }
-                },
+                // {
+                //   $addFields: {
+                //     _aday: {
+                //       $dateFromString: {
+                //         dateString: '$aday'
+                //       }
+                //     }
+                //   }
+                // },
                 {
                   $addFields: {
                     yearMonth: {
                       $dateToString: {
                         format: '%Y-%m',
-                        date: '$dayDate'
+                        date: '$_aday',
+                        timezone: '+0800'
                       }
                     }
                   }
@@ -102,17 +109,17 @@ class ClassName {
                 {
                   $match: {
                     $expr: {
-                      $and: [{ $eq: ['$yearMonth', month_] }, { $eq: ['$sid', '$$pb_sid'] }]
+                      $and: [{ $eq: ['$yearMonth', month_] }, { $eq: ['$_sid', '$$pb_sid'] }]
                     }
                   }
                 },
 
                 {
                   $group: {
-                    _id: '$sid',
+                    _id: '$_sid',
                     summoney: { $sum: '$amoney' },
                     aid: { $first: '$_id' },
-                    sid: { $first: '$sid' }
+                    sid: { $first: '$_sid' }
                   }
                 }
               ],
@@ -124,11 +131,17 @@ class ClassName {
             $project: {
               _id: 0,
               id: '$_id',
-              sid: '$sid',
-              bid: '$bid',
+              sid: '$_sid',
+              bid: '$_bid',
 
               m: '$pmoney',
-              d: '$pmonth',
+              d: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$_pmonth',
+                  timezone: '+0800'
+                }
+              },
 
               sn: { $first: '$smallTypes.sname' },
               bn: { $first: '$bigTypes.bname' },
@@ -185,7 +198,10 @@ class ClassName {
     return new Promise(async (resolve, reject) => {
       try {
         const doc = {
-          sid: Number(sid_),
+          sid: sid_,
+          _sid:new ObjectId(sid_),
+          _pmonth:new Date(pmonth_),
+          _ptime:new Date(),
           pmonth: pmonth_,
           pmoney: Number(pmoney_),
           ptime: moment().format('yyyy-MM-DD HH:mm:SS'),
@@ -208,7 +224,8 @@ class ClassName {
         const whereStr = { _id: new ObjectId(id_) }
         const updateStr = {
           $set: {
-            sid: Number(sid_)
+            _sid: new ObjectId(sid_),
+            sid:sid_
           }
         }
         const result = await this.COLLECTION.updateOne(whereStr, updateStr)
@@ -229,16 +246,17 @@ class ClassName {
         const updateStr = {
           $set: {
             pmoney: Number(pmoney_),
-            pmonth: pmonth_
+            pmonth: pmonth_,
+            _pmonth: new Date(pmonth_)
           }
         }
         const result = await this.COLLECTION.updateOne(whereStr, updateStr)
         console.log('result')
         console.log(result)
 
-        resolve(RES.success('Succeed updateType budget '))
+        resolve(RES.success('Succeed updateDetail budget '))
       } finally {
-        resolve(RES.error('updateType failed'))
+        resolve(RES.error('updateDetail failed'))
         await client.close()
       }
     })

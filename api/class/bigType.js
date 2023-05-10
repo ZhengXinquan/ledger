@@ -5,7 +5,88 @@ class Clasbname {
     this.DATABASE = client.db('hdm189315162_db')
     this.COLLECTION = this.DATABASE.collection(MODULE_NAME)
   }
+  updatePXList(o) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const ids = Object.keys(o)
+        const len = ids.length
+        for (let i = 0; i < len; i++) {
+          const id_ = ids[i]
+          const px_ = o[id_]
 
+          const whereStr = { _id: new ObjectId(id_) }
+          const updateStr = {
+            $set: {
+              bpx: Number(px_)
+            }
+          }
+          await this.COLLECTION.updateOne(whereStr, updateStr)
+        }
+
+        resolve(RES.success(MODULE_NAME + ' Succeed show '))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' show failed'))
+        await client.close()
+      }
+    })
+  }
+  show(id_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            bshow: 1
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success(MODULE_NAME + ' Succeed show '))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' show failed'))
+        await client.close()
+      }
+    })
+  }
+  hide(id_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const whereStr = { _id: new ObjectId(id_) }
+        const updateStr = {
+          $set: {
+            bshow: 0
+          }
+        }
+        const result = await this.COLLECTION.updateOne(whereStr, updateStr)
+        console.log('result')
+        console.log(result)
+
+        resolve(RES.success(MODULE_NAME + ' Succeed hide '))
+      } finally {
+        resolve(RES.error(MODULE_NAME + ' hide failed'))
+        await client.close()
+      }
+    })
+  }
+  delete(id_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let conditions = {
+          _id: new ObjectId(id_)
+        }
+
+        const result = await this.COLLECTION.deleteOne(conditions)
+        console.log(result, conditions)
+
+        resolve(RES.success(MODULE_NAME + 'Succeed DELETE'))
+      } finally {
+        resolve(RES.error(MODULE_NAME + 'DELETE failed'))
+        await client.close()
+      }
+    })
+  }
   insert(bname_, btype_) {
     return new Promise(async (resolve, reject) => {
       try {

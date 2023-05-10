@@ -1,42 +1,30 @@
-const FILE_DIR = 'api/income.js'
-const ClassModel = require('./class/income')
+const MODULE_NAME = 'income'
+const FILE_DIR = 'api/' + MODULE_NAME + '.js'
+const { call, RES } = require('./class/utils')
+const ClassModel = require('./class/' + MODULE_NAME)
 const ClassObj = new ClassModel()
 
 async function OnRequest(request, response) {
   const POST = request.body
   const Info = POST['info']
-
-  console.log('AccountBook request', request.body.info)
-
+  console.log(MODULE_NAME + ' request', request.body.info)
   switch (Info) {
-    case 'insert':
-      {
-        ClassObj.insert(POST.tid, POST.n, POST.m, POST.d)
-          .then((res) => {
-            response.end(JSON.stringify(res))
-          })
-          .catch((err) => {
-            console.log(err)
-            response.send(FILE_DIR + 'err')
-            response.end()
-          })
-      }
+    case 'delete':
+      call(ClassObj.delete(POST.id), response)
       break
-    case 'select_pay':
-      //   const $time_ = POST.d
-      //   const $type_ = POST.t
-      ClassObj.select()
-        .then((res) => {
-          response.end(JSON.stringify(res))
-        })
-        .catch((err) => {
-          console.log(err)
-          response.send(FILE_DIR + 'err')
-          response.end()
-        })
+    case 'insert':
+      call(ClassObj.insert(POST.tid, POST.n, POST.m, POST.d), response)
+      break
+    case 'update_type':
+      call(ClassObj.updateType(POST.id, POST.tid), response)
       break
 
-    default:
+    case 'update_detail':
+      call(ClassObj.updateDetail(POST.id, POST.n, POST.m, POST.d), response)
+      break
+    default: {
+      response.end(JSON.stringify(RES.error(`${FILE_DIR} : ${Info}  err`)))
+    }
   }
 }
 
