@@ -30,7 +30,7 @@ class ClassName {
           $group: {
             _id: '$yearMonth',
             pay: { $sum: '$amoney' },
-            d: { $first: '$yearMonth' },
+            d: { $first: '$yearMonth' }
           }
         },
 
@@ -41,7 +41,6 @@ class ClassName {
               account_book_yearMonth: '$_id'
             },
             pipeline: [
-    
               {
                 $addFields: {
                   yearMonth: {
@@ -374,7 +373,168 @@ class ClassName {
       }
     })
   }
-  search() {}
+  search(start_, end_, word_, bn_, sn_) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // 日期范围
+        let dayMatch = null
+        if (start_ || end_) {
+          dayMatch = {}
+          const start = start_ ? new Date(start_ + ' 00:00:00') : null
+          const end = end_ ? new Date(end_ + ' 23:59:59') : null
+          if (start) dayMatch['$gte'] = start
+          if (end) dayMatch['$lte'] = end
+        }
+        // 模糊搜索名称
+        const wordMatch = word_
+          ? {
+              $regex: word_
+            }
+          : null
+
+
+
+        /************ 收入 ******************** */
+        const accountIncomes = this.DATABASE.collection('aa_income')
+        const incomeConditions1 = {}
+        if(dayMatch)incomeConditions1['_iday']=dayMatch
+        if(wordMatch)incomeConditions1['iname']=wordMatch
+        const incomeConditions2 = {}
+        if(bn_)incomeConditions2['bigTypes.bname']=bn_
+
+        const list = await accountIncomes
+          .aggregate([
+            {
+              $match: incomeConditions1
+            },
+            {
+              $lookup: {
+                localField: '_bid', // 左集合 join 字段
+                from: 'aa_big_type', // 右集合
+                foreignField: '_id', // 右集合 join 字段
+                as: 'bigTypes' // 新生成字段（类型array）
+              }
+            },
+            { $unwind: '$bigTypes' },
+            {
+              $match: incomeConditions2
+            },
+            {
+              $project: {
+                //决定要显示的字段，相当于select的作用
+                _id: 0,
+                id: '$_id',
+                bid: '$_bid',
+                tid: '$_bid',
+                tt: '$bigTypes.btype',
+                tn: '$bigTypes.bname',
+                bn: '$bigTypes.bname',
+                n: '$iname',
+                m: '$imoney',
+                d: {
+                  $dateToString: {
+                    format: '%Y-%m-%d',
+                    date: '$_iday',
+                    timezone: '+0800'
+                  }
+                },
+                t: {
+                  $dateToString: {
+                    format: '%Y-%m-%d %H:%M:%S',
+                    date: '$_itime',
+                    timezone: '+0800'
+                  }
+                },
+                rowType: 'income'
+              }
+            }
+          ])
+          .toArray()
+
+      /************ 支出 ******************** */
+        const conditions1 = {}
+        if(dayMatch)conditions1['_aday']=dayMatch
+        if(wordMatch)conditions1['aname']=wordMatch
+        const conditions2 = {}
+        if(bn_)conditions2['bigTypes.bname']=bn_
+        if(sn_)conditions2['smallTypes.sname']=sn_
+
+        const list2 = await this.COLLECTION.aggregate([
+          {
+            $match: conditions1
+          },
+          {
+            $lookup: {
+              localField: '_sid', // 左集合 join 字段
+              from: 'aa_small_type', // 右集合
+              foreignField: '_id', // 右集合 join 字段
+              as: 'smallTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$smallTypes' },
+          {
+            $addFields: {
+              _bid: '$smallTypes._bid'
+            }
+          },
+          {
+            $lookup: {
+              localField: '_bid', // 左集合 join 字段
+              from: 'aa_big_type', // 右集合
+              foreignField: '_id', // 右集合 join 字段
+              as: 'bigTypes' // 新生成字段（类型array）
+            }
+          },
+          { $unwind: '$bigTypes' },
+          {
+            $match: conditions2
+          },
+          {
+            $project: {
+              //决定要显示的字段，相当于select的作用
+              _id: 0,
+              id: '$_id',
+              bid: '$_bid',
+              tid: '$smallTypes._id',
+              tn: '$smallTypes.sname',
+              tt: '$bigTypes.btype',
+              bn: '$bigTypes.bname',
+              n: '$aname',
+              m: '$amoney',
+              d: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$_aday',
+                  timezone: '+0800'
+                }
+              },
+              t: {
+                $dateToString: {
+                  format: '%Y-%m-%d %H:%M:%S',
+                  date: '$_atime',
+                  timezone: '+0800'
+                }
+              },
+              rowType: 'a-book'
+              // B_result: '$B_list.result'
+            }
+          }
+        ]).toArray()
+
+        const res = list.concat(list2)
+        res.sort((a, b) => {
+          return new Date(b.t) - new Date(a.t)
+        })
+        res.sort((a, b) => {
+          return new Date(b.d) - new Date(a.d)
+        })
+        resolve(RES.success(res))
+      } finally {
+        resolve(RES.error([]))
+        await client.close()
+      }
+    })
+  }
   /**
    *
    * @param {*} aday_   2023-05
@@ -438,9 +598,6 @@ class ClassName {
                     timezone: '+0800'
                   }
                 },
-                dd: '$_iday',
-                y: '$year',
-                w: '$week',
                 rowType: 'income'
                 // B_result: '$B_list.result'
               }
@@ -486,7 +643,7 @@ class ClassName {
               //决定要显示的字段，相当于select的作用
               _id: 0,
               id: '$_id',
-              bid: '$big._id',
+              bid: '$_bid',
               tid: '$smallTypes._id',
               tn: '$smallTypes.sname',
               tt: '$bigTypes.btype',
@@ -507,9 +664,6 @@ class ClassName {
                   timezone: '+0800'
                 }
               },
-              dd: '$_aday',
-              y: '$year',
-              w: '$week',
               rowType: 'a-book'
               // B_result: '$B_list.result'
             }
