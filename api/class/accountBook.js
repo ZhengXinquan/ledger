@@ -595,13 +595,13 @@ class ClassName {
     return new Promise(async (resolve, reject) => {
       try {
         const doc = {
-          sid: sid,
+          sid: sid_,
           _sid: new ObjectId(sid_),
           aname: aname_,
           amoney: Number(amoney),
           aday: aday_,
           _aday: new Date(aday_),
-          atime: moment().format('yyyy-MM-DD HH:mm:SS'),
+          atime: moment().format('YYYY-MM-DD HH:mm:SS'),
           _atime: new Date(),
           cid: 0
         }
