@@ -1,0 +1,6 @@
+build/*.js
+src/assets
+src/
+public
+dist
+src/components/BjTreeSelect/vue-treeselect.cjs.js
