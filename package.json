@@ -10,7 +10,7 @@
   "dependencies": {
     "axios": "^0.1.0",
     "core-js": "^3.6.5",
-    "echarts": "^4.3.0",
+    "echarts": "^5.4.2",
     "moment": "^2.29.4",
     "mongodb": "^5.4.0",
     "qs": "3.00",
