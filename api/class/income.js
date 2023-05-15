@@ -2,7 +2,7 @@ const MODULE_NAME = 'aa_income'
 const { RES, client, ObjectId, moment } = require('./utils')
 class Clasbname {
   constructor(TOKEN_USER_INFO) {
-    this.DATABASE = client.db('hdm189315162_db')
+    this.DATABASE = client().db('hdm189315162_db')
     this.COLLECTION = this.DATABASE.collection(MODULE_NAME)
   }
 
@@ -19,7 +19,7 @@ class Clasbname {
         resolve(RES.success(MODULE_NAME + 'Succeed DELETE'))
       } finally {
         resolve(RES.error(MODULE_NAME + 'DELETE failed'))
-        await client.close()
+        // await client.close()
       }
     })
   }
@@ -42,7 +42,7 @@ class Clasbname {
         resolve(RES.success(MODULE_NAME + ' Succeed insert'))
       } finally {
         resolve(RES.error(MODULE_NAME + ' Insert failed'))
-        await client.close()
+        // await client.close()
       }
     })
   }
@@ -63,7 +63,7 @@ class Clasbname {
         resolve(RES.success(MODULE_NAME + ' Succeed updateType '))
       } finally {
         resolve(RES.error(MODULE_NAME + ' updateType failed'))
-        await client.close()
+        // await client.close()
       }
     })
   }
@@ -86,7 +86,7 @@ class Clasbname {
         resolve(RES.success(MODULE_NAME + ' Succeed updateDetail '))
       } finally {
         resolve(RES.error(MODULE_NAME + ' updateDetail failed'))
-        await client.close()
+        // await client.close()
       }
     })
   }

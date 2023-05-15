@@ -324,7 +324,7 @@
       </div>
     </transition>
     <!-- 底部菜单 -->
-    <van-tabbar @change="onChangeTabBarFn">
+    <van-tabbar @change="onChangeTabBarFn" :value="activeTabBar">
       <van-tabbar-item
         name="1"
         icon="balance-list-o"
