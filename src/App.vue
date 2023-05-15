@@ -490,6 +490,7 @@
     <!-- 弹出日期选择 -->
     <van-popup v-model="datePicker.show" round position="bottom">
       <van-datetime-picker
+        v-if="datePicker.show"
         v-model="datePicker.value"
         :type="datePicker.type"
         title="选择年月日"
