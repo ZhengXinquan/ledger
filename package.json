@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.1.0",
-    "core-js": "^3.6.5",
+    "core-js": "^3.31.0",
     "echarts": "^4.3.0",
     "moment": "^2.29.4",
     "mongodb": "^5.4.0",
