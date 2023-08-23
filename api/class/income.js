@@ -4,8 +4,26 @@ class Clasbname {
   constructor(TOKEN_USER_INFO) {
     this.DATABASE = client().db('hdm189315162_db');
     this.COLLECTION = this.DATABASE.collection(MODULE_NAME);
+    this.LOG = this.DATABASE.collection('aa_log');
   }
-
+  /**
+   *
+   * @param {*} to_id
+   * @param {*} to_name
+   * @param {*} to_num
+   * @param {*} to_info_json
+   */
+  async log(title, tid, d) {
+    const doc = {
+      title,
+      tid,
+      d,
+      time: new Date(),
+    };
+    const result = await this.LOG.insertOne(doc);
+    console.log('log result');
+    console.log(result);
+  }
   delete(id_) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -15,6 +33,7 @@ class Clasbname {
 
         const result = await this.COLLECTION.deleteOne(conditions);
         console.log(result, conditions);
+        this.log('delete ' + MODULE_NAME, new ObjectId(id_), result);
 
         resolve(RES.success(MODULE_NAME + 'Succeed DELETE'));
       } finally {
@@ -38,7 +57,7 @@ class Clasbname {
         const result = await this.COLLECTION.insertOne(doc);
         console.log('result');
         console.log(result);
-
+        this.log('insert ' + MODULE_NAME, result.insertedId, doc);
         resolve(RES.success(MODULE_NAME + ' Succeed insert'));
       } finally {
         resolve(RES.error(MODULE_NAME + ' Insert failed'));
@@ -59,6 +78,7 @@ class Clasbname {
         const result = await this.COLLECTION.updateOne(whereStr, updateStr);
         console.log('result');
         console.log(result);
+        this.log('updateType ' + MODULE_NAME, new ObjectId(id_), { _bid: new ObjectId(_bid) });
 
         resolve(RES.success(MODULE_NAME + ' Succeed updateType '));
       } finally {
@@ -82,6 +102,12 @@ class Clasbname {
         const result = await this.COLLECTION.updateOne(whereStr, updateStr);
         console.log('result');
         console.log(result);
+        this.log('updateDetail ' + MODULE_NAME, new ObjectId(id_), {
+          iname: iname_,
+          imoney: Number(imoney_),
+          _iday: new Date(iday_),
+          iday: iday_,
+        });
 
         resolve(RES.success(MODULE_NAME + ' Succeed updateDetail '));
       } finally {

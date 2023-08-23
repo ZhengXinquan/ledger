@@ -1,8 +1,28 @@
 const { RES, client, ObjectId, moment } = require('./utils');
+const MODULE_NAME = 'aa_account_book';
 class ClassName {
   constructor(TOKEN_USER_INFO) {
     this.DATABASE = client().db('hdm189315162_db');
     this.COLLECTION = this.DATABASE.collection('aa_account_book');
+    this.LOG = this.DATABASE.collection('aa_log');
+  }
+  /**
+   *
+   * @param {*} to_id
+   * @param {*} to_name
+   * @param {*} to_num
+   * @param {*} to_info_json
+   */
+  async log(title, tid, d) {
+    const doc = {
+      title,
+      tid,
+      d,
+      time: new Date(),
+    };
+    const result = await this.LOG.insertOne(doc);
+    console.log('log result');
+    console.log(result);
   }
   selectBillByYear(year_) {
     return new Promise(async (resolve, reject) => {
@@ -691,6 +711,7 @@ class ClassName {
 
         const result = await this.COLLECTION.deleteOne(conditions);
         console.log(result, conditions);
+        this.log('delete ' + MODULE_NAME, new ObjectId(id_), result);
 
         resolve(RES.success(MODULE_NAME + 'Succeed DELETE'));
       } finally {
@@ -714,6 +735,12 @@ class ClassName {
         const result = await this.COLLECTION.updateOne(whereStr, updateStr);
         console.log('result');
         console.log(result);
+        this.log('updateDetail ' + MODULE_NAME, new ObjectId(id_), {
+          aname: aname_,
+          amoney: Number(amoney_),
+          aday: aday_,
+          _aday: new Date(aday_),
+        });
 
         resolve(RES.success('Succeed updateDetail budget '));
       } finally {
@@ -735,6 +762,8 @@ class ClassName {
         const result = await this.COLLECTION.updateOne(whereStr, updateStr);
         console.log('result');
         console.log(result);
+
+        this.log('updateType ' + MODULE_NAME, new ObjectId(id_), { _sid: new ObjectId(sid_) });
 
         resolve(RES.success('Succeed updateType budget '));
       } finally {
@@ -760,6 +789,8 @@ class ClassName {
         const result = await this.COLLECTION.insertOne(doc);
         console.log('result');
         console.log(result);
+
+        this.log('insert ' + MODULE_NAME, result.insertedId, doc);
 
         resolve(RES.success('Succeed insert account_book '));
       } finally {
