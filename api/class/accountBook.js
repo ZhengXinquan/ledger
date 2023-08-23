@@ -707,7 +707,7 @@ class ClassName {
           $set: {
             aname: aname_,
             amoney: Number(amoney_),
-            aday_: aday_,
+            aday: aday_,
             _aday: new Date(aday_),
           },
         };
