@@ -228,7 +228,7 @@ export default {
           if (d == 'date') {
             this.datePicker.max = new Date();
             this.datePicker.min = new Date(2020, 1, 1);
-            this.datePicker.value = new Date();
+            // this.datePicker.value = new Date();
             this.datePicker.show = true;
             this.datePicker.confirm = () => {
               this.datePicker.show = false;
