@@ -167,7 +167,7 @@ export default {
         tid: 0, //类id
         name: '',
         money: '0.00',
-        day: '2020-10-01',
+        day: new Date().format('yyyy-MM-dd'),
         defaultInputName: '',
         doneName: '完成',
         onClose: () => {
@@ -228,7 +228,7 @@ export default {
           if (d == 'date') {
             this.datePicker.max = new Date();
             this.datePicker.min = new Date(2020, 1, 1);
-            this.datePicker.value = new Date();
+            // this.datePicker.value = new Date();
             this.datePicker.show = true;
             this.datePicker.confirm = () => {
               this.datePicker.show = false;
@@ -1021,7 +1021,7 @@ export default {
       this.keyboard.tid = d.id; //类id
       this.keyboard.name = '';
       this.keyboard.money = 0;
-      this.keyboard.day = new Date().format('yyyy-MM-dd');
+      // this.keyboard.day = new Date().format('yyyy-MM-dd');
       this.keyboard.doneName = '完成';
       this.keyboard.defaultInputName = d.n;
       this.keyboard.show = true;

@@ -708,10 +708,10 @@ class ClassName {
         let conditions = {
           _id: new ObjectId(id_),
         };
-
-        const result = await this.COLLECTION.deleteOne(conditions);
+      const detail =  await this.COLLECTION.findOne(conditions);
+      // const result = await this.COLLECTION.deleteOne(conditions);
         console.log(result, conditions);
-        this.log('delete ' + MODULE_NAME, new ObjectId(id_), result);
+        this.log('try delete ' + MODULE_NAME, new ObjectId(id_), {result,detail});
 
         resolve(RES.success(MODULE_NAME + 'Succeed DELETE'));
       } finally {
