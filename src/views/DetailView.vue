@@ -82,8 +82,10 @@ const groups = computed(() => {
     map[day].income = Number(map[day].income).toFixed(2);
     map[day].expense = Number(map[day].expense).toFixed(2);
   });
+  // 服务端 select_by_month 按 d DESC, t DESC 返回；分组后按日期降序（最新日期在最上）
   return Object.keys(map)
     .sort()
+    .reverse()
     .map(k => map[k]);
 });
 
