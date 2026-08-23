@@ -57,8 +57,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { accountBook, search, ui } from '@/store';
+
+onMounted(() => accountBook.showByMonth());
 
 const year = computed(() => new Date(accountBook.month).format('yyyy年'));
 const month = computed(() => new Date(accountBook.month).format('MM月'));
