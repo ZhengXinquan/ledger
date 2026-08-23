@@ -1,14 +1,16 @@
-# Cloudflare Workers / D1 配置
+# Cloudflare Pages + Pages Functions(Worker) + D1 配置
+# 参考文档：https://developers.cloudflare.com/pages/functions/
+# 本地开发：`wrangler pages dev`（读取本文件的 pages_build_output_dir 与 d1_databases）
+# 线上发布：`wrangler pages deploy` 或 Cloudflare 控制台 Git 集成
+#
 # 说明：
-#   - database_id 为占位值。真正部署到线上前需先运行
-#     `npx wrangler d1 create ledger-db`，把返回的 database_id 填入此处。
-#   - 本地验证可先用本配置：
-#     npx wrangler d1 execute ledger-db --local --file=./d1-export.sql
+#   - pages_build_output_dir = "dist"：Vue 前端构建产物输出到 dist/，由 Pages 静态托管。
+#   - d1_databases：为 Pages Functions 提供 D1 绑定；运行时代码统一通过 env.ledger_db 访问。
+#   - database_id 在运行 `wrangler d1 create ledger-db` 后写入真实值并提交。
 name = "ledger"
-main = "worker.js"
 compatibility_date = "2025-09-23"
+pages_build_output_dir = "dist"
 
-# 兼容旧版绑定写法（后续迁移 API 时使用）
 [[d1_databases]]
 binding = "ledger_db"
 database_name = "ledger-db"

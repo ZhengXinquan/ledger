@@ -1,108 +1,54 @@
-# ledger
+# 账本（ledger）
 
-## .github/workflows/sync.yml
+家庭记账 Web 应用：**Vue3 前端 + Cloudflare Pages Functions（Worker）+ D1 数据库**。
+提供收支明细、分类（大/小类）、月度预算、年度账单汇总与 ECharts 图表。
 
-```yml
-name: Sync
+> 本项目由早期 MongoDB/Vercel 时代的旧代码迁移而来，现已重构为标准的
+> Cloudflare Pages（静态托管）+ Pages Functions（`/api/*`）+ D1（SQLite）架构，
+> Mongoose 与 PHP 等遗留代码已移除。
 
-on:
-  push:
-    branches: [master]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Sync to Gitee ledger
-        uses: wearerequired/git-mirror-action@master
-        env:
-          # 注意在 Settings->Secrets 配置 GITEE_RSA_PRIVATE_KEY
-          SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
-        with:
-          # 注意替换为你的 GitHub 源仓库地址
-          source-repo: git@github.com:ZhengXinquan/ledger.git
-          # 注意替换为你的 Gitee 目标仓库地址
-          destination-repo: git@gitee.com:zhengxinquan/ledger.git
-```
-
-## api
-
-vercel.com , 最多 12 个文件
-
-## old
-
-旧的 php、html 代码
-
-## init.js
-
-mySql 数据库导入 mongodb，初始化
-
-## test.js
-
-测试
-
-## 远程仓库命令
-
-1.  修改命令 #查看关联的远程仓库
+## 快速开始（本地运行）
 
 ```bash
-    git remote -v
-
-    git remote set-url origin [url]
-
-  # 例：git remote set-url origin gitlab@yang/BarUtils.git
+npm install                 # 安装依赖（含 wrangler）
+npm run db:local-init       # 初始化本地 D1 表结构
+npm run db:local-seed       # （可选）灌入历史数据，便于查看真实效果
+npm run pages:dev           # 启动后端 + Pages 静态服务 → http://127.0.0.1:8788
+npm run dev                 # （可选）Vite 开发服务器 + /api 代理 → http://localhost:8080
 ```
 
-2.  先删后加
+详细步骤见 [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md)。
 
-```bash
-    git remote rm origin
+## 部署 / 发布
 
-    git remote add origin [url]
+- 官方 Git 集成：Cloudflare Dashboard 创建 Pages 项目，绑定仓库，
+  构建命令 `npm run build`，输出目录 `dist`；`functions/` 自动作为 Functions 上线。
+- 或 Wrangler CLI：`npm run build && npm run pages:deploy`。
 
-#例：git remote add origin gitlab@yang/BarUtils.git
+完整发布与线上数据库运维见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
-```
+## 文档索引
 
-3. 直接修改.git 文件夹下的 config 文件
+| 文档 | 内容 |
+| --- | --- |
+| [docs/FILE_STRUCTURE.md](docs/FILE_STRUCTURE.md) | 项目文件组织、前后端约定、路由规则 |
+| [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) | 本地初始化、本地运行、常见问题 |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 上线 / 发布 / D1 线上运维 / 回滚 |
 
-```bash
-[core]
-repositoryformatversion = 0
-filemode = false
-bare = false
-logallrefupdates = true
-symlinks = false
-ignorecase = true
-[submodule]
-active = .
-[remote "origin"]
-url = https://github.com/yang/BarUtils.git
-fetch = +refs/heads/_:refs/remotes/origin/_
-[branch "master"]
-remote = origin
-merge = refs/heads/maste
-```
+## 主要脚本
 
-## 生成 github/gitee/gitlab 等可用的 ssh 密钥
+| 脚本 | 说明 |
+| --- | --- |
+| `npm run dev` | Vite 开发服务器（8080，/api 代理到 8788） |
+| `npm run build` | 构建静态前端到 `dist/` |
+| `npm run pages:dev` | wrangler 本地运行 Pages（静态 + Functions，8788） |
+| `npm run pages:deploy` | wrangler 发布 Pages（静态 + Functions） |
+| `npm run db:local-init` | 本地 D1 执行 `migrations/schema.sql` |
+| `npm run db:local-seed` | 本地 D1 执行 `migrations/seed.sql`（建表+数据） |
+| `npm run db:create` | 线上创建 D1 数据库（获取 database_id） |
 
-```bash
-ssh-keygen -t ed25519 -C "xxxxx@xxxxx.com"
-```
+## 技术栈
 
-按照提示完成三次回车，即可生成 ssh key。通过查看 `~/.ssh/id_ed25519.pub` 文件内容，获取到你的 public key
-
-复制生成后的 ssh key，通过仓库主页 「管理」->「部署公钥管理」->「添加部署公钥」 ，添加生成的 public key 添加到仓库中。
-
-添加后，在终端（Terminal）中输入
-
-```shell
-ssh -T git@gitee.com
-```
-
-首次使用需要确认并添加主机到本机 SSH 可信列表。若返回 `Hi XXX! You've successfully authenticated, but Gitee.com does not provide shell access.` 内容，则证明添加成功。
-
-## Error: error:0308010C:digital envelope routines::unsupported
-
-[node 版本更换](https://blog.csdn.net/qq_52855464/article/details/128091796)
+- 前端：Vue 3（Options API）、Vant 4、ECharts 5、Vuedraggable、Axios、Vite 5
+- 后端：Cloudflare Pages Functions（模块化 ES import）、Cloudflare D1（SQLite）
+- 工具：Wrangler 4、Prettier

@@ -2,15 +2,20 @@
   "name": "ledger",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pages:dev": "wrangler pages dev",
+    "pages:deploy": "wrangler pages deploy",
+    "db:create": "wrangler d1 create ledger-db",
+    "db:local-init": "wrangler d1 execute ledger-db --local --file=migrations/schema.sql",
+    "db:local-seed": "wrangler d1 execute ledger-db --local --file=migrations/seed.sql"
   },
   "dependencies": {
     "axios": "^1.7.9",
     "echarts": "^5.6.0",
-    "mongodb": "^5.4.0",
     "qs": "^6.13.0",
     "vant": "^4.9.19",
     "vue": "^3.5.13",
@@ -18,7 +23,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^5.4.14"
+    "vite": "^5.4.14",
+    "wrangler": "^4.125.0"
   },
   "browserslist": [
     "> 1%",
