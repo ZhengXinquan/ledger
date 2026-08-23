@@ -57,6 +57,7 @@ const pageTitle = computed(() => TITLES[ui.activeTab] || '');
 
 <style scoped>
 .app-main {
-  padding-bottom: 50px;
+  flex: 1;
+  width: 100%;
 }
 </style>

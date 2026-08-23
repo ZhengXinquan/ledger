@@ -64,3 +64,9 @@ onMounted(() => {
   if (myBill.list.length === 0) myBill.get();
 });
 </script>
+<style scoped> 
+.view-bill :deep(.van-grid-item__content){
+  padding: 0!important;
+}
+
+</style>
