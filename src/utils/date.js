@@ -51,4 +51,8 @@ export function installDateFormat() {
   }
 }
 
+// 模块加载即挂载：ES 模块按依赖图先执行本模块体，
+// 保证早于 store 等消费方的顶层初始化（旧代码是 index.html 内联脚本在应用前执行）
+installDateFormat();
+
 export default { install: installDateFormat };

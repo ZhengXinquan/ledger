@@ -5,6 +5,7 @@
  */
 import { reactive, computed } from 'vue';
 import { showToast } from 'vant';
+import '@/utils/date'; // 副作用导入：确保 Date.prototype.format 挂载早于本模块顶层初始化
 import { request, DEFAULT_SEARCH } from '@/utils';
 
 /* ------------------------------------------------------------------ */
