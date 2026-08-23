@@ -7,7 +7,7 @@
       @click-left="ui.typesTabsVisible = false"
       @click-right="ui.typesTabsVisible = false"
     ></van-nav-bar>
-    <van-tabs v-model="activeType" type="card" sticky>
+    <van-tabs v-model:active="activeType" type="card" sticky>
       <van-tab title="大类支出" name="bigType_pay">
         <TypeManageList type="bigType_pay" />
       </van-tab>

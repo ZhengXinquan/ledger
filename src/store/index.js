@@ -617,10 +617,24 @@ export const chart = reactive({
     this.showDetail();
   },
   // selectPayDetailByTime 聚合为 小类/大类 配置
+  // 去重策略：
+  // 1. 时段合法性：chart.time 必须属于当前 timeList，否则是切换类型瞬间 Vant 回发的
+  //    旧列表过渡值（如 month 列表里残留的 2026-33 / 2026-33+），直接丢弃不请求；
+  // 2. 在途去重：相同 type|time 的请求尚未完成时不再发出第二次（buildTimeList 直接调用
+  //    与 time watcher 触发的同一请求只保留一份）；
+  // 3. 序列号：并发请求只允许最新一次响应写入，避免旧响应后到覆盖新数据。
+  _fetchSeq: 0,
+  _fetchInFlight: '',
   showDetail() {
-    request('api/accountBook', { info: 'selectPayDetailByTime', t: this.type, d: this.time }, toLoading).then(
-      e => {
+    const key = this.type + '|' + this.time;
+    if (!this.timeList.some(t => t.value === this.time)) return;
+    if (key === this._fetchInFlight) return;
+    this._fetchInFlight = key;
+    const seq = ++this._fetchSeq;
+    request('api/accountBook', { info: 'selectPayDetailByTime', t: this.type, d: this.time }, toLoading)
+      .then(e => {
         ui.refreshing = false;
+        if (seq !== this._fetchSeq) return;
         if (e.tip === 1) {
           this.detailList = [].concat(e.d.d);
           const smallTypeTemp = [];
@@ -658,8 +672,10 @@ export const chart = reactive({
           this.bigTypeConfig.sum = e.d.sum;
           this.selectTypeId = 0;
         }
-      },
-    );
+      })
+      .finally(() => {
+        if (seq === this._fetchSeq) this._fetchInFlight = '';
+      });
   },
   // 选中图形后：展示对应聚合项下的小类/大类明细（依据 isBig）
   initDetailList(newList, ntid) {
@@ -709,6 +725,12 @@ export const chart = reactive({
     return source;
   },
 });
+
+// TEMP-DEBUG: expose store for browser-side inspection
+if (typeof window !== 'undefined') {
+  window.__store = window.__store || {};
+  window.__store.chart = chart;
+}
 
 /* ------------------------------------------------------------------ */
 /* payBudget 预算页                                                    */

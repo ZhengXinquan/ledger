@@ -1,12 +1,12 @@
 <template>
   <div class="view view-chart">
-    <van-tabs v-model="chart.type" type="card" class="view-card">
+    <van-tabs v-model:active="chart.type" type="card" class="view-card">
       <van-tab title="周" name="week"></van-tab>
       <van-tab title="月" name="month"></van-tab>
       <van-tab title="年" name="year"></van-tab>
     </van-tabs>
 
-    <van-tabs v-model="chart.time" class="time-tabs">
+    <van-tabs v-model:active="chart.time" class="time-tabs">
       <van-tab
         v-for="(t, i) in chart.timeList"
         :key="i"
