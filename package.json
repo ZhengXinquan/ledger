@@ -1,45 +1,24 @@
 {
   "name": "ledger",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^0.1.0",
-    "core-js": "^3.6.5",
-    "echarts": "^4.3.0",
-    "moment": "^2.29.4",
+    "axios": "^1.7.9",
+    "echarts": "^5.6.0",
     "mongodb": "^5.4.0",
-    "qs": "3.00",
-    "vant": "^2.12.54",
-    "vue": "^2.6.11",
-    "vuedraggable": "^2.24.3"
+    "qs": "^6.13.0",
+    "vant": "^4.9.19",
+    "vue": "^3.5.13",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.17",
-    "@vue/cli-plugin-eslint": "~4.5.17",
-    "@vue/cli-service": "~4.5.17",
-    "babel-eslint": "^7.1.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^5.4.14"
   },
   "browserslist": [
     "> 1%",

@@ -1,13 +1,15 @@
-import Vue from 'vue';
-import App from './App.vue';
+import { createApp } from 'vue';
 import Vant from 'vant';
 import 'vant/lib/index.css';
 
+import { installDateFormat } from '@/utils/date';
 import '@/styles/index.css'; // global css
 
-Vue.config.productionTip = false;
+import App from './App.vue';
 
-Vue.use(Vant);
-new Vue({
-  render: h => h(App),
-}).$mount('#app');
+installDateFormat();
+
+const app = createApp(App);
+app.use(Vant);
+app.mount('#app');
+export default app;

@@ -1,0 +1,15 @@
+# Cloudflare Workers / D1 配置
+# 说明：
+#   - database_id 为占位值。真正部署到线上前需先运行
+#     `npx wrangler d1 create ledger-db`，把返回的 database_id 填入此处。
+#   - 本地验证可先用本配置：
+#     npx wrangler d1 execute ledger-db --local --file=./d1-export.sql
+name = "ledger"
+main = "worker.js"
+compatibility_date = "2025-09-23"
+
+# 兼容旧版绑定写法（后续迁移 API 时使用）
+[[d1_databases]]
+binding = "ledger_db"
+database_name = "ledger-db"
+database_id = "9c59b477-558a-4dfb-a424-605a1bac2ae9"

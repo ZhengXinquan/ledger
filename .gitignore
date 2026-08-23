@@ -17,6 +17,10 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
+# Cloudflare wrangler 本地模拟状态
+.wrangler/
+*.sqlite
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

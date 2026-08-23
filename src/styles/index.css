@@ -1,79 +1,498 @@
+/* ==========================================================================
+   Ledger 记账 — Vue3 + Vant4 主题样式
+   设计基调：薄荷绿主色 + 白色卡片，替换原青灰配色
+   ========================================================================== */
+
 :root {
-  --main-color: #00b4aa;
-  /* #ff9966; */
-}
-.tabbar-active,
-.van-button--plain.van-button--info,
-.custom-icon {
-  color: var(--main-color);
-}
-.van-nav-bar,
-.van-tabs__line,
-.van-grid-item__content,
-.van-tabs__wrap,
-.van-tabs__nav--card,
-.van-button--info {
-  background-color: var(--main-color);
-}
-.van-hairline--bottom::after {
-  border-bottom-width: 0;
-}
-[class*='van-hairline']::after {
-  border-color: #ffffcc;
+  --color-main: #14c9a8;
+  --color-main-deep: #0aa88c;
+  --color-main-soft: #e9f7f3;
+  --color-accent: #ff9966;
+  --color-bg: #f2f7f5;
+  --color-card: #ffffff;
+  --color-text: #2b2b33;
+  --color-text-2: #7f8f8b;
+  --color-border: #e8efec;
+  --card-shadow: 0 2px 10px rgba(20, 180, 158, 0.08);
+  --radius: 12px;
+
+  /* Vant 主题变量（Vant4 --van-* 命名） */
+  --van-primary-color: var(--color-main);
+  --van-success-color: var(--color-main);
+  --van-warning-color: var(--color-accent);
+  --van-danger-color: #ee6a5f;
+
+  --van-nav-bar-background: var(--color-main);
+  --van-nav-bar-title-text-color: #ffffff;
+  --van-nav-bar-icon-color: #ffffff;
+  --van-nav-bar-text-color: #ffffff;
+  --van-nav-bar-title-font-size: 16px;
+
+  --van-tabbar-item-active-color: var(--color-main);
+  --van-tabbar-item-text-color: #7f8f8b;
+  --van-tabbar-height: 50px;
+
+  --van-grid-item-text-color: #ffffff;
+  --van-grid-item-content-background: linear-gradient(135deg, var(--color-main), #3fd9b7);
+
+  --van-tabs-bottom-bar-color: var(--color-main);
+  --van-tabs-nav-background: transparent;
+  --van-tab-text-color: #7f8f8b;
+  --van-tab-active-text-color: var(--color-main-deep);
+
+  --van-cell-group-background: transparent;
+  --van-cell-background: transparent;
+  --van-picker-background: #ffffff;
+
+  --van-dialog-radius: 14px;
+  --van-button-border-radius: 8px;
+  --van-search-background: transparent;
 }
 
-.van-tabs__wrap {
-  padding: 4px 0;
+html,
+body {
+  height: 100%;
 }
-.van-tabs__nav--card {
-  border-color: #333;
-  color: #333;
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI,
+    Arial, Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.van-tabs__nav--card .van-tab.van-tab--active {
-  background-color: #333;
+#app {
+  min-height: 100%;
 }
-.van-tabs__nav--card .van-tab {
-  color: #333;
-  border-right-color: #333;
+
+/* ------------------------------------------------------------------
+   工具类
+------------------------------------------------------------------ */
+.flex {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
 }
-.van-button--info {
-  color: #333;
-  border-color: var(--main-color);
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
-.van-button--plain {
-  background-color: #fff;
-  border-color: var(--main-color);
+.flex-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100%;
 }
-.van-nav-bar__text,
-.van-nav-bar .van-icon {
-  color: #333;
+.content-between {
+  justify-content: space-between;
 }
-.custom-icon.van-icon-add-o {
-  color: #99cc99;
+.content-around {
+  justify-content: space-around;
 }
-.van-grid-item__icon + .van-grid-item__text {
-  color: #ffffcc;
-  font-size: 14px;
+.content-center {
+  justify-content: center;
 }
-.van-grid-item__icon {
-  color: #ffffcc;
+.flex-center {
+  justify-content: center;
+  align-items: center;
 }
-/*  */
 
 .main-color-1 {
-  color: var(--main-color);
+  color: var(--color-main-deep);
+  font-weight: 600;
 }
 .main-color-2 {
-  color: #ffffcc;
+  color: #ffffff;
 }
 .main-color-3 {
-  color: #99cc99;
-}
-.van-tabbar-item .grfont-wuuiconxiangjifangda {
-  font-size: 36px;
-  color: var(--main-color);
+  color: var(--color-main-deep);
 }
 
+/* ------------------------------------------------------------------
+   视图容器
+------------------------------------------------------------------ */
+.view {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 96px);
+  box-sizing: border-box;
+}
+.view-card {
+  margin: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--color-card);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+.view-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+.month-big {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.year-big {
+  font-size: 22px;
+  font-weight: 700;
+}
+.year-unit {
+  font-size: 10px;
+  font-weight: 400;
+}
+.money-in {
+  color: var(--color-main-deep) !important;
+}
+.money-out {
+  color: var(--color-accent) !important;
+}
+.gap {
+  height: 8px;
+}
+
+/* ------------------------------------------------------------------
+   明细页
+------------------------------------------------------------------ */
+.account-book-time {
+  padding: 12px 16px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  box-sizing: border-box;
+}
+.account-book-time > div {
+  width: 50%;
+}
+.day-sum {
+  text-align: right;
+  padding-right: 4px;
+  box-sizing: border-box;
+  font-weight: 400;
+  color: var(--color-text-2);
+  font-size: 12px;
+}
+.account-book-detail {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-card);
+}
+.account-book-detail > div {
+  box-sizing: border-box;
+  height: 42px;
+  font-size: 12px;
+}
+.account-book-detail-type {
+  width: 20%;
+  font-size: 10px;
+  padding-left: 12px;
+}
+.account-book-detail-type .circle {
+  border-radius: 50%;
+  height: 34px;
+  width: 34px;
+  border-color: var(--color-main-soft);
+  color: var(--color-main-deep);
+  background: var(--color-main-soft);
+}
+.account-book-detail-name {
+  width: 60%;
+  line-height: 41px;
+  padding-left: 8px;
+  color: var(--color-text);
+}
+.account-book-detail-money {
+  width: 20%;
+  text-align: right;
+  line-height: 41px;
+  font-size: 15px;
+  padding-right: 16px;
+}
+.delete-button {
+  height: 100%;
+  border-radius: 0 !important;
+}
+.van-swipe-cell__right .delete-button {
+  background: var(--van-danger-color, #ee6a5f);
+}
+
+/* ------------------------------------------------------------------
+   图表页
+------------------------------------------------------------------ */
+.chart-list {
+  padding-bottom: 16px;
+}
+.pay-detail-list-head {
+  font-size: 13px;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  box-sizing: border-box;
+}
+.pay-detail-list-item {
+  font-size: 12px;
+  background: var(--color-card);
+}
+.pay-detail-list-item > div {
+  padding: 8px 0;
+}
+.pay-detail-list-item .circle {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-main-soft);
+  color: var(--color-main-deep);
+  background: var(--color-main-soft);
+}
+
+/* ------------------------------------------------------------------
+   预算页
+------------------------------------------------------------------ */
+.circle-header {
+  font-size: 13px;
+  color: var(--color-text-2);
+  padding: 12px 16px;
+  box-sizing: border-box;
+  align-items: center;
+}
+.circle-header-data {
+  text-align: right;
+}
+.circle-header-data .van-cell {
+  padding: 4px 0;
+  font-size: 12px;
+}
+.pay-budget-list-head {
+  color: var(--color-text-2);
+  font-size: 12px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+.pay-budget-list-line {
+  color: var(--color-text);
+  height: 36px;
+  line-height: 36px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  background: var(--color-card);
+}
+.pay-budget-list > div {
+  width: 22.5%;
+}
+.pay-budget-list > div:last-child {
+  width: 10%;
+}
+.budget-list {
+  padding: 4px 12px 60px;
+}
+.fixed-bottom.flex-group {
+  padding: 0 12px 8px;
+  box-sizing: border-box;
+  gap: 8px;
+}
+.fixed-bottom .van-button {
+  border-radius: 8px;
+}
+
+/* ------------------------------------------------------------------
+   我的页
+------------------------------------------------------------------ */
+.my-page-top-grid {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 12px 4px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+}
+.my-page-top-grid span:first-child {
+  margin-bottom: 6px;
+  opacity: 0.9;
+  font-size: 11px;
+}
+.my-bill-list-head {
+  color: var(--color-text-2);
+  font-size: 12px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+.my-bill-list-line {
+  color: var(--color-text);
+  height: 36px;
+  line-height: 36px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  background: var(--color-card);
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+.my-bill-list > div {
+  width: 18%;
+}
+.my-bill-list > div:first-child {
+  width: 10%;
+}
+
+/* ------------------------------------------------------------------
+   键盘（记账）
+------------------------------------------------------------------ */
+.keypad-wrap {
+  box-sizing: border-box;
+  padding: 6px 16px;
+}
+.keyboard-input {
+  margin: 8px auto;
+  border-bottom: 2px solid var(--color-main);
+}
+.keyboard-input-name {
+  width: 60%;
+}
+.keyboard-input-money {
+  width: 40%;
+  font-weight: 700;
+  color: var(--color-main-deep);
+}
+.keyboard-list {
+  display: flex;
+  flex-wrap: wrap;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.keyboard-list-item {
+  width: 25%;
+  height: 46px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+  font-size: 22px;
+  background: var(--color-card);
+  cursor: pointer;
+}
+.keyboard-date {
+  font-size: 12px;
+  color: var(--color-main-deep);
+}
+.keyboard-delete {
+  font-size: 14px;
+  color: var(--color-accent);
+}
+.keyboard-done {
+  font-size: 18px;
+  color: #ffffff;
+  background: var(--color-main);
+}
+
+/* ------------------------------------------------------------------
+   弹层通用
+------------------------------------------------------------------ */
+.sheet-pad {
+  box-sizing: border-box;
+  padding: 14px 16px;
+}
+.sheet-head {
+  margin: 8px 8px 16px;
+}
+.sheet-field {
+  margin: 8px auto 18px;
+  border-bottom: 1px solid var(--color-main);
+}
+.sheet-scroll {
+  overflow-y: auto;
+  height: calc(100% - 44px);
+  box-sizing: border-box;
+}
+.type-select-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  color: var(--color-accent);
+  font-size: 15px;
+  box-sizing: border-box;
+}
+.type-select-body {
+  box-sizing: border-box;
+  padding: 0 12px 24px;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+.selectTypePopup-tab {
+  width: 20%;
+  text-align: center;
+  height: 30px;
+  line-height: 30px;
+  font-size: 16px;
+}
+.selectTypePopup-active {
+  border-bottom: 2px solid var(--color-main);
+}
+
+/* ------------------------------------------------------------------
+   分类选择（tab-3）与通用圆形
+------------------------------------------------------------------ */
+.tab-3-list {
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+}
+.tab-3-list-item {
+  width: 25%;
+  box-sizing: border-box;
+  margin: 6px 0;
+  color: var(--color-text-2);
+  font-size: 12px;
+  min-height: 66px;
+}
+.tab-3-list-item .circle {
+  border: 1px solid var(--color-main-soft);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  text-align: center;
+  background: var(--color-main-soft);
+  color: var(--color-main-deep);
+  margin-bottom: 4px;
+}
+.circle-not-active,
+.circle-not-active > .circle {
+  opacity: 0.55;
+}
+.circle-active,
+.circle-active > .circle {
+  opacity: 1;
+  border-color: var(--color-main) !important;
+  background: var(--color-main);
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(20, 201, 168, 0.4);
+}
+.circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--color-main-deep);
+  background: var(--color-main-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
 .bottom-line {
   position: relative;
 }
@@ -85,342 +504,46 @@
   right: 16px;
   bottom: 0;
   left: 16px;
-  width: 100%;
   display: block;
-  border-bottom: 1px solid #ffffcc;
+  border-bottom: 1px solid rgba(20, 180, 158, 0.12);
   -webkit-transform: scaleY(0.5);
   transform: scaleY(0.5);
 }
-.circle {
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--main-color);
-  color: var(--main-color);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  text-align: center;
-  margin-bottom: 4px;
-}
-.circle-not-active,
-.circle-not-active > .circle {
-  border-color: #ccc !important;
-  color: #ccc !important;
-}
-.circle-active,
-.circle-active > .circle {
-  border-color: var(--main-color) !important;
-  color: var(--main-color) !important;
-}
-/*.circle-not-active>.circle{
-  border: 1px solid #ccc!important;
-  color: #ccc!important;
-}
-.circle-active>.circle{
-  border: 1px solid var(--main-color)!important;
-  color: var(--main-color)!important;
-}*/
 
-.selectTypePopup-tab {
-  width: 20%;
-  text-align: center;
-  height: 30px;
-  line-height: 30px;
-  font-size: 16px;
+/* ------------------------------------------------------------------
+   新增小类弹层
+------------------------------------------------------------------ */
+.popup-list {
+  padding: 8px 0;
 }
-
-.selectTypePopup-active {
-  border-bottom: 2px solid var(--main-color);
-}
-
-.van-icon-add-o {
-  color: aqua;
-}
-
-.van-icon-close {
-  color: red;
-}
-
-#smallType li > span {
-  font-size: 18px;
-  margin-right: 0.5em;
-}
-
-.custom-icon {
-  margin-right: 0.5em;
-}
-
-.flex-group {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-}
-
-.flex {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.flex-column {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-}
-
-.content-start {
-  justify-content: flex-start;
-}
-
-.content-around {
-  justify-content: space-around;
-}
-
-.content-end {
-  justify-content: flex-end;
-}
-
-.content-center {
-  justify-content: center;
-}
-
-.content-between {
-  justify-content: space-between;
-}
-
-.flex-center {
-  justify-content: center;
-  align-items: center;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.items-start {
-  align-items: flex-start;
-}
-
-.items-end {
-  align-items: flex-end;
-}
-.flex-auto::after {
-  content: '';
-  flex: auto;
-}
-
 .popup-list-item {
-  display: flex;
-  justify-content: center;
-  width: 40%;
-  border: 1px solid #999;
-  border-radius: 4px;
-  box-sizing: border-box;
-  margin: 8px auto;
-  color: #999;
-}
-
-.popup-list-item.circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  line-height: 40px;
-}
-
-.account-book-time {
-  width: 100%;
-  box-sizing: border-box;
-  border-bottom: 1px solid #c8c9cc;
-  color: #c8c9cc;
-  font-size: 10px;
-  padding: 6px 4px;
-  margin: 4px auto;
-}
-
-.account-book-time > div {
-  width: 50%;
-}
-
-.account-book-detail {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.account-book-detail > div {
-  box-sizing: border-box;
-  height: 42px;
-  font-size: 12px;
-}
-
-.account-book-detail-type {
-  width: 20%;
-  font-size: 10px;
-}
-
-.account-book-detail-type .circle {
-  border-radius: 50%;
-  height: 36px;
-  width: 36px;
-}
-
-.account-book-detail-name {
-  width: 60%;
-  /* border-bottom: 1px solid #ccc; */
-  line-height: 40px;
-}
-
-.account-book-detail-money {
-  width: 20%;
-  /* border-bottom: 1px solid #ccc; */
-  text-align: right;
-  line-height: 40px;
-  font-size: 16px;
-  padding-right: 16px;
-}
-
-.tab-3-list {
-  padding-top: 0.5em;
-}
-
-.tab-3-list-item {
-  width: 20%;
-  box-sizing: border-box;
-  margin: 4px auto;
-  color: #999;
-  font-size: 12px;
-  height: 60px;
-}
-.tab-3-list-item .circle {
-  border: 1px solid #999;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.keyboard-input {
-}
-
-.keyboard-input-name {
-}
-
-.keyboard-input-money {
-  width: 40%;
-}
-
-.keyboard-list {
-}
-
-.keyboard-list-item {
   width: 25%;
-  height: 48px;
-  display: flex;
   justify-content: center;
-  align-items: center;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  font-size: 24px;
+  margin: 6px 0;
 }
 
-.pay-budget-list-head {
-  color: #c8c9cc;
-  font-size: 10px;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
+/* ------------------------------------------------------------------
+   Vant 细节微调
+------------------------------------------------------------------ */
+.van-nav-bar--placeholder {
+  height: 46px;
 }
-.pay-budget-list-line {
-  color: #333;
-  height: 28px;
-  line-height: 28px;
-  font-size: 12px;
-  text-align: center;
+.view-card .van-grid-item__content {
+  background: var(--van-grid-item-content-background);
 }
-.pay-budget-list > div {
-  width: 22.5%;
-  /*background-color: red;*/
+.view-card .van-cell {
+  margin: 0;
 }
-.pay-budget-list > div:first-child {
+.van-tabs--card :deep(.van-tabs__nav) {
+  background: var(--color-card);
+  border-radius: 10px;
 }
-.pay-budget-list > div:last-child {
-  width: 10%;
-}
-.my-bill-list > div {
-  width: 18%;
-}
-.my-bill-list > div:first-child {
-  width: 10%;
-}
-.my-bill-list-head {
-  color: #c8c9cc;
-  font-size: 10px;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
-}
-.my-bill-list-line {
-  color: #333;
-  height: 28px;
-  line-height: 28px;
-  font-size: 12px;
-  text-align: center;
-}
-
-.circle-header {
-  font-size: 14px;
-  color: #999;
-  padding: 16px;
-  box-sizing: border-box;
-}
-.circle-header-data {
-  text-align: right;
-}
-.circle-header-data .van-cell {
-  padding: 0;
-}
-.pay-detail-list-head {
-  font-size: 14px;
-  padding: 16px;
-  font-weight: bold;
-  box-sizing: border-box;
-}
-.pay-detail-list-item {
-  font-size: 12px;
-}
-.pay-detail-list-item .circle {
-  width: 42px;
-  height: 42px;
-
-  border: 1px solid #ccc;
-  color: #ccc;
-}
-
-.fixed-bottom {
-  /* position: fixed;
-  bottom: 0.5em;*/
-  margin-top: 0.5em;
-}
-
 .van-overlay {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.35);
 }
-
-.my-page-top-grid {
-  box-sizing: border-box;
-  height: 100%;
-  padding: 16px 8px;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #ffffcc;
+.van-empty {
+  padding-top: 30px;
 }
-.my-page-top-grid span:first-child {
-  font-size: 16 px;
-  margin-bottom: 10px;
+.van-dialog__content {
+  padding-top: 16px;
 }
