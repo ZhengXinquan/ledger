@@ -116,10 +116,10 @@ body {
 .view {
   display: flex;
   flex-direction: column;
-  /* 固定高度：整屏减去顶部导航栏(46px)与底部 TabBar(50px)。
+  /* 固定高度：整屏减去顶部导航栏(46px)、底部 TabBar(50px)与中部加号按钮上浮区域(30px)。
      顶部卡片/搜索/表头等作为固定区域不参与滚动，
      只有 .view-scroll 在内部滚动，保证下拉刷新仅在列表滚到顶部时触发。 */
-  height: calc(100vh - 96px);
+  height: calc(100vh - 126px);
   min-height: 0;
   box-sizing: border-box;
   overflow: hidden;
@@ -526,6 +526,41 @@ body {
   width: 25%;
   justify-content: center;
   margin: 6px 0;
+}
+
+/* ------------------------------------------------------------------
+   底部“+”记账主按钮（TabBar 中部，主要操作区）
+   放大为 60px 圆形按钮，上浮于 TabBar 之上，点击区域更大更突出
+------------------------------------------------------------------ */
+.van-tabbar .van-tabbar-item:nth-child(3) {
+  position: relative;
+}
+.van-tabbar .van-tabbar-item:nth-child(3) .van-tabbar-item__icon {
+  position: absolute;
+  left: 50%;
+  top: -30px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-main), #3fd9b7);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(20, 201, 168, 0.5), 0 2px 6px rgba(20, 180, 158, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1;
+}
+.van-tabbar .van-tabbar-item:nth-child(3) .van-tabbar-item__icon .grfont {
+  font-size: 34px;
+  line-height: 1;
+}
+.van-tabbar .van-tabbar-item:nth-child(3):active .van-tabbar-item__icon {
+  transform: translateX(-50%) scale(0.92);
+  box-shadow: 0 3px 10px rgba(20, 201, 168, 0.4);
 }
 
 /* ------------------------------------------------------------------
