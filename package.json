@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "hooks":"node scripts/trigger-deploy-hook.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
